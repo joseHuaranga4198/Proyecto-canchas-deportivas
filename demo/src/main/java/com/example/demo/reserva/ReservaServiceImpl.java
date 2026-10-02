@@ -86,10 +86,19 @@ public class ReservaServiceImpl implements ReservaService {
                 horaInicio,
                 horaFin,
                 total,
-                "CONFIRMADA"
+                "PENDIENTE" // Cumple RN05: Nace pendiente de pago
         );
         reservas.add(nueva);
         return nueva;
+    }
+
+    public boolean confirmarPago(Long reservaId) {
+        Reserva r = obtenerPorId(reservaId);
+        if (r != null && "PENDIENTE".equalsIgnoreCase(r.getEstado())) {
+            r.setEstado("CONFIRMADA");
+            return true;
+        }
+        return false;
     }
 
     @Override

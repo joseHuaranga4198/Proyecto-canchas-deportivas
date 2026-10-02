@@ -40,6 +40,22 @@ public class ReservaController {
         return "reserva/generar";
     }
 
+    // I06: Pantalla de Pago y Confirmación
+    @GetMapping("/pago/{id}")
+    public String vistaPago(@PathVariable Long id, Model model) {
+        Reserva r = reservaService.obtenerPorId(id);
+        if (r == null) return "redirect:/canchas/catalogo";
+        model.addAttribute("reserva", r);
+        return "reserva/pago";
+    }
+
+    // F12: Procesar pago (autoservicio)
+    @PostMapping("/pago/procesar/{id}")
+    public String procesarPago(@PathVariable Long id) {
+        ((ReservaServiceImpl) reservaService).confirmarPago(id);
+        return "redirect:/reservas/confirmacion/" + id;
+    }
+
     // Procesar reserva (sin JavaScript, todo validado por POST MVC)
     @PostMapping("/guardar")
     public String procesarReserva(
