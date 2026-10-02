@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+    I09 — Panel administrativo
+    Funcionalidad: F16 — Consultar reservas administrativamente (punto de acceso)
+    Sistema: Reserva de Canchas Deportivas
+    Preparado para: Spring Boot + Thymeleaf
+
+    Esta interfaz funciona como dashboard/navegación administrativa.
+    NO implementa las funcionalidades completas de gestión de canchas,
+    clientes, reservas, pagos ni métricas: solo ofrece accesos e
+    indicadores visuales simples hacia esas interfaces (I10, I14, I15, I16, I17).
+  -->
+  <title>Panel administrativo — CanchaYa</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Encabezado administrativo: bienvenida + rol ── */
+    .admin-intro {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .admin-intro-rol {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background-color: var(--color-primary-lt);
+      color: var(--color-primary-dk);
+      border-radius: 20px;
+      font-size: var(--text-xs);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Indicadores del sistema (resumen estático) ── */
+    .admin-resumen {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+
+    .admin-stat {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .admin-stat-valor {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .admin-stat-label {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      font-weight: 500;
+    }
+
+    .admin-stat.reservas .admin-stat-valor  { color: var(--color-primary-dk); }
+    .admin-stat.pendientes .admin-stat-valor{ color: var(--color-warning); }
+    .admin-stat.canchas .admin-stat-valor   { color: var(--color-text); }
+    .admin-stat.ingresos .admin-stat-valor  { color: var(--color-success); }
+
+    /* ── Sección de accesos administrativos ── */
+    .admin-section-title {
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: -0.01em;
+      margin-bottom: var(--space-5);
+    }
+
+    .admin-accesos-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+      margin-bottom: var(--space-10);
+    }
+
+    /* Tarjeta de acceso administrativo */
+    .admin-card {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow var(--transition), transform var(--transition);
+    }
+
+    .admin-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .admin-card-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+      background-color: #FAFBFC;
+    }
+
+    .admin-card-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+    }
+
+    .admin-card-titulo {
+      font-size: var(--text-base);
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    .admin-card-body {
+      padding: var(--space-5) var(--space-6);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .admin-card-desc {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .admin-card-footer {
+      padding: var(--space-4) var(--space-6);
+      border-top: 1px solid var(--color-border);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .admin-resumen { grid-template-columns: repeat(2, 1fr); }
+      .admin-accesos-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 580px) {
+      .admin-resumen { grid-template-columns: 1fr; }
+      .admin-accesos-grid { grid-template-columns: 1fr; }
+      .admin-intro { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVEGACIÓN ADMINISTRATIVA ── -->
+<header class="site-header">
+  <nav class="nav-inner" aria-label="Navegación administrativa">
+    <a href="I09-panel-administrativo.html" class="nav-brand">
+      <div class="nav-brand-icon">⚽</div>
+      <span class="nav-brand-name">Cancha<span>Ya</span> <span style="color:rgba(255,255,255,0.4); font-weight:600;">Admin</span></span>
+    </a>
+
+    <ul class="nav-links" role="list">
+      <li><a href="I09-panel-administrativo.html" class="nav-link active" aria-current="page">Panel</a></li>
+      <li><a href="I10-gestion-canchas.html" class="nav-link">Canchas</a></li>
+      <li><a href="I14-gestion-clientes.html" class="nav-link">Clientes</a></li>
+      <li><a href="I15-gestion-reservas.html" class="nav-link">Reservas</a></li>
+      <li><a href="I16-gestion-pagos.html" class="nav-link">Pagos</a></li>
+      <li><a href="I17-metricas.html" class="nav-link">Métricas</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="nav-user">
+        <div class="nav-avatar" aria-hidden="true">RA</div>
+        <span>Rosa Alcántara</span>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ── CONTENIDO PRINCIPAL ── -->
+<main>
+  <div class="page-container">
+
+    <header class="page-header">
+      <div class="admin-intro">
+        <div>
+          <h1 class="page-title">Panel administrativo</h1>
+          <p class="page-subtitle">Accede a las principales funciones administrativas del sistema.</p>
+        </div>
+        <span class="admin-intro-rol" aria-label="Rol del usuario">🛡 Administrador</span>
+      </div>
+    </header>
+
+    <!-- Resumen visual del sistema (estático, sin backend) -->
+    <!--
+      En Thymeleaf: los valores se calcularían en el controlador administrativo
+      th:text="${totalReservas}", th:text="${reservasPendientes}", etc.
+      Estos indicadores son solo un vistazo general; el detalle se consulta
+      en I15 (reservas), I10 (canchas) e I17 (métricas).
+    -->
+    <section aria-label="Resumen general del sistema">
+      <div class="admin-resumen">
+        <div class="admin-stat reservas">
+          <span class="admin-stat-valor">128</span>
+          <span class="admin-stat-label">Reservas registradas</span>
+        </div>
+        <div class="admin-stat pendientes">
+          <span class="admin-stat-valor">6</span>
+          <span class="admin-stat-label">Reservas pendientes de pago</span>
+        </div>
+        <div class="admin-stat canchas">
+          <span class="admin-stat-valor">5 / 6</span>
+          <span class="admin-stat-label">Canchas activas</span>
+        </div>
+        <div class="admin-stat ingresos">
+          <span class="admin-stat-valor">S/ 6,420</span>
+          <span class="admin-stat-label">Ingresos del mes</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Accesos a las áreas administrativas -->
+    <!--
+      Cada tarjeta conduce a su interfaz correspondiente.
+      No se implementa aquí ninguna funcionalidad interna de esas interfaces.
+    -->
+    <section aria-labelledby="accesos-titulo">
+      <h2 class="admin-section-title" id="accesos-titulo">Áreas administrativas</h2>
+
+      <div class="admin-accesos-grid">
+
+        <!-- Acceso: Gestión de canchas (I10) -->
+        <article class="admin-card">
+          <header class="admin-card-header">
+            <div class="admin-card-icon" aria-hidden="true">🏟️</div>
+            <h3 class="admin-card-titulo">Gestión de canchas</h3>
+          </header>
+          <div class="admin-card-body">
+            <p class="admin-card-desc">
+              Consulta las canchas registradas, su categoría, precio y estado.
+            </p>
+          </div>
+          <footer class="admin-card-footer">
+            <a href="I10-gestion-canchas.html" class="btn btn-primary btn-full">
+              Ir a Canchas
+            </a>
+          </footer>
+        </article>
+
+        <!-- Acceso: Gestión de clientes (I14) -->
+        <article class="admin-card">
+          <header class="admin-card-header">
+            <div class="admin-card-icon" aria-hidden="true">👥</div>
+            <h3 class="admin-card-titulo">Gestión de clientes</h3>
+          </header>
+          <div class="admin-card-body">
+            <p class="admin-card-desc">
+              Consulta, actualiza y bloquea a los clientes registrados en el sistema.
+            </p>
+          </div>
+          <footer class="admin-card-footer">
+            <a href="I14-gestion-clientes.html" class="btn btn-primary btn-full">
+              Ir a Clientes
+            </a>
+          </footer>
+        </article>
+
+        <!-- Acceso: Gestión de reservas (I15) -->
+        <article class="admin-card">
+          <header class="admin-card-header">
+            <div class="admin-card-icon" aria-hidden="true">📅</div>
+            <h3 class="admin-card-titulo">Gestión de reservas</h3>
+          </header>
+          <div class="admin-card-body">
+            <p class="admin-card-desc">
+              Consulta las reservas registradas y gestiona cancelaciones y disponibilidad de canchas.
+            </p>
+          </div>
+          <footer class="admin-card-footer">
+            <a href="I15-gestion-reservas.html" class="btn btn-primary btn-full">
+              Ir a Reservas
+            </a>
+          </footer>
+        </article>
+
+        <!-- Acceso: Gestión de pagos (I16) -->
+        <article class="admin-card">
+          <header class="admin-card-header">
+            <div class="admin-card-icon" aria-hidden="true">💳</div>
+            <h3 class="admin-card-titulo">Gestión de pagos</h3>
+          </header>
+          <div class="admin-card-body">
+            <p class="admin-card-desc">
+              Consulta los pagos asociados a las reservas, su estado, método y fecha.
+            </p>
+          </div>
+          <footer class="admin-card-footer">
+            <a href="I16-gestion-pagos.html" class="btn btn-primary btn-full">
+              Ir a Pagos
+            </a>
+          </footer>
+        </article>
+
+        <!-- Acceso: Métricas (I17) -->
+        <article class="admin-card">
+          <header class="admin-card-header">
+            <div class="admin-card-icon" aria-hidden="true">📊</div>
+            <h3 class="admin-card-titulo">Métricas</h3>
+          </header>
+          <div class="admin-card-body">
+            <p class="admin-card-desc">
+              Consulta indicadores del sistema: reservas, ingresos, cancelaciones y uso de canchas.
+            </p>
+          </div>
+          <footer class="admin-card-footer">
+            <a href="I17-metricas.html" class="btn btn-primary btn-full">
+              Ir a Métricas
+            </a>
+          </footer>
+        </article>
+
+      </div><!-- /.admin-accesos-grid -->
+    </section>
+
+  </div><!-- /.page-container -->
+</main>
+
+<!-- ── PIE DE PÁGINA ── -->
+<footer class="site-footer">
+  <p>CanchaYa — Universidad Continental · Ingeniería Web · Grupo 3 · 2026</p>
+</footer>
+
+</body>
+</html>

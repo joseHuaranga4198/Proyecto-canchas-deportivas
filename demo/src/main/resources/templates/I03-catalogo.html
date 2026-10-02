@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+    I03 — Catálogo de canchas
+    Funcionalidad: F06 — Consultar canchas
+    Sistema: Reserva de Canchas Deportivas
+    Preparado para: Spring Boot + Thymeleaf
+  -->
+  <title>Catálogo de canchas — CanchaYa</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Filtros ── */
+    .filter-bar {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-6);
+      margin-bottom: var(--space-8);
+      display: flex;
+      align-items: flex-end;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .filter-bar .form-group {
+      margin-bottom: 0;
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .filter-bar .form-label {
+      font-size: var(--text-xs);
+    }
+
+    .filter-bar .form-select {
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--text-sm);
+    }
+
+    /* ── Grid de canchas ── */
+    .canchas-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+    }
+
+    /* ── Card de cancha ── */
+    .cancha-card {
+      background-color: var(--color-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow var(--transition), transform var(--transition);
+    }
+
+    .cancha-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .cancha-card.inactiva {
+      opacity: 0.65;
+      pointer-events: none;
+    }
+
+    /* Imagen / placeholder visual */
+    .cancha-imagen {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background-color: #1A1A2E;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    /* Patrón decorativo para el placeholder */
+    .cancha-imagen-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: var(--space-2);
+      position: relative;
+    }
+
+    .cancha-imagen-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+    }
+
+    /* Líneas de campo deportivo decorativas */
+    .cancha-imagen-placeholder::after {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border: 1.5px solid rgba(46,204,113,0.25);
+      border-radius: 4px;
+    }
+
+    .cancha-imagen-icon {
+      position: relative;
+      z-index: 1;
+      font-size: 2.2rem;
+      line-height: 1;
+    }
+
+    .cancha-imagen-tipo {
+      position: relative;
+      z-index: 1;
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.08em;
+    }
+
+    /* Badge de estado superpuesto */
+    .cancha-estado-badge {
+      position: absolute;
+      top: var(--space-3);
+      right: var(--space-3);
+      z-index: 2;
+    }
+
+    /* Cuerpo de la card */
+    .cancha-body {
+      padding: var(--space-5);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .cancha-categoria {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--color-primary-dk);
+      letter-spacing: 0.04em;
+    }
+
+    .cancha-nombre {
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+    }
+
+    .cancha-descripcion {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    /* Fila inferior: precio + botón */
+    .cancha-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      border-top: 1px solid var(--color-border);
+      background-color: #FAFBFC;
+    }
+
+    .cancha-precio {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cancha-precio-label {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      line-height: 1;
+    }
+
+    .cancha-precio-valor {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: -0.02em;
+    }
+
+    .cancha-precio-unidad {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      font-weight: 400;
+    }
+
+    /* Resultados encontrados */
+    .resultados-info {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-5);
+    }
+
+    .resultados-info strong {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    @media (max-width: 900px) {
+      .canchas-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 580px) {
+      .canchas-grid { grid-template-columns: 1fr; }
+      .filter-bar { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVEGACIÓN ── -->
+<header class="site-header">
+  <nav class="nav-inner" aria-label="Navegación principal">
+    <a href="I03-catalogo.html" class="nav-brand">
+      <div class="nav-brand-icon">⚽</div>
+      <span class="nav-brand-name">Cancha<span>Ya</span></span>
+    </a>
+
+    <ul class="nav-links" role="list">
+      <li><a href="I03-catalogo.html" class="nav-link active" aria-current="page">Canchas</a></li>
+      <li><a href="I07-mis-reservas.html" class="nav-link">Mis reservas</a></li>
+      <li><a href="I20-perfil.html" class="nav-link">Mi perfil</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="nav-user">
+        <div class="nav-avatar" aria-hidden="true">JH</div>
+        <span>José Huaranga</span>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ── CONTENIDO PRINCIPAL ── -->
+<main>
+  <div class="page-container">
+
+    <header class="page-header">
+      <h1 class="page-title">Catálogo de canchas</h1>
+      <p class="page-subtitle">Elige la cancha que prefieras y consulta su disponibilidad.</p>
+    </header>
+
+    <!-- Barra de filtros -->
+    <!--
+      En Thymeleaf: <form th:action="@{/canchas}" method="get">
+      Los filtros se procesarán en el controlador y devolverán la lista filtrada.
+    -->
+    <section aria-label="Filtros de búsqueda">
+      <form class="filter-bar" action="I03-catalogo.html" method="get" id="filtro-form">
+        <div class="form-group">
+          <label class="form-label" for="filtro-categoria">Categoría</label>
+          <select class="form-select" id="filtro-categoria" name="categoria">
+            <option value="">Todas las categorías</option>
+            <option value="futbol">Fútbol</option>
+            <option value="futbol-sala">Fútbol sala</option>
+            <option value="basquet">Básquetbol</option>
+            <option value="voley">Vóleibol</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="filtro-estado">Estado</label>
+          <select class="form-select" id="filtro-estado" name="estado">
+            <option value="">Todos</option>
+            <option value="activa" selected>Solo activas</option>
+            <option value="inactiva">Solo inactivas</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-secondary">
+          Filtrar
+        </button>
+      </form>
+    </section>
+
+    <!-- Contador de resultados -->
+    <p class="resultados-info">
+      Mostrando <strong>6 canchas</strong> disponibles.
+    </p>
+
+    <!-- Grid de canchas -->
+    <!--
+      En Thymeleaf: <section th:each="cancha : ${canchas}">
+      Cada article corresponde a un objeto Cancha del modelo.
+    -->
+    <section aria-label="Lista de canchas">
+      <div class="canchas-grid">
+
+        <!-- C01: Cancha activa -->
+        <article class="cancha-card">
+          <div class="cancha-imagen">
+            <div class="cancha-imagen-placeholder">
+              <span class="cancha-imagen-icon">⚽</span>
+              <span class="cancha-imagen-tipo">FÚTBOL 11</span>
+            </div>
+            <div class="cancha-estado-badge">
+              <span class="badge badge-disponible">Activa</span>
+            </div>
+          </div>
+          <div class="cancha-body">
+            <span class="cancha-categoria">Fútbol</span>
+            <h2 class="cancha-nombre">Cancha Norte</h2>
+            <p class="cancha-descripcion">
+              Cancha de grass sintético para fútbol 11. Con iluminación LED,
+              vestuarios y estacionamiento incluido.
+            </p>
+          </div>
+          <footer class="cancha-footer">
+            <div class="cancha-precio">
+              <span class="cancha-precio-label">Precio</span>
+              <span class="cancha-precio-valor">
+                S/ 80 <span class="cancha-precio-unidad">/ hora</span>
+              </span>
+            </div>
+            <!--
+              En Thymeleaf: <a th:href="@{/disponibilidad(idCancha=${cancha.id})}">
+            -->
+            <a href="I04-disponibilidad.html" class="btn btn-primary">
+              Ver disponibilidad
+            </a>
+          </footer>
+        </article>
+
+        <!-- C02: Cancha activa -->
+        <article class="cancha-card">
+          <div class="cancha-imagen">
+            <div class="cancha-imagen-placeholder">
+              <span class="cancha-imagen-icon">⚽</span>
+              <span class="cancha-imagen-tipo">FÚTBOL 7</span>
+            </div>
+            <div class="cancha-estado-badge">
+              <span class="badge badge-disponible">Activa</span>
+            </div>
+          </div>
+          <div class="cancha-body">
+            <span class="cancha-categoria">Fútbol</span>
+            <h2 class="cancha-nombre">Cancha Sur</h2>
+            <p class="cancha-descripcion">
+              Cancha de grass sintético para fútbol 7. Ideal para partidos
+              reducidos, con arcos y redes en buen estado.
+            </p>
+          </div>
+          <footer class="cancha-footer">
+            <div class="cancha-precio">
+              <span class="cancha-precio-label">Precio</span>
+              <span class="cancha-precio-valor">
+                S/ 60 <span class="cancha-precio-unidad">/ hora</span>
+              </span>
+            </div>
+            <a href="I04-disponibilidad.html" class="btn btn-primary">
+              Ver disponibilidad
+            </a>
+          </footer>
+        </article>
+
+        <!-- C03: Cancha activa -->
+        <article class="cancha-card">
+          <div class="cancha-imagen">
+            <div class="cancha-imagen-placeholder" style="--bg-start:#0D1B2A; --bg-end:#1B2838;">
+              <span class="cancha-imagen-icon">🏀</span>
+              <span class="cancha-imagen-tipo">BÁSQUETBOL</span>
+            </div>
+            <div class="cancha-estado-badge">
+              <span class="badge badge-disponible">Activa</span>
+            </div>
+          </div>
+          <div class="cancha-body">
+            <span class="cancha-categoria">Básquetbol</span>
+            <h2 class="cancha-nombre">Pista Multiusos A</h2>
+            <p class="cancha-descripcion">
+              Pista de básquetbol con piso de madera tratada. Capacidad para
+              dos equipos de cinco jugadores. Iluminación cenital.
+            </p>
+          </div>
+          <footer class="cancha-footer">
+            <div class="cancha-precio">
+              <span class="cancha-precio-label">Precio</span>
+              <span class="cancha-precio-valor">
+                S/ 50 <span class="cancha-precio-unidad">/ hora</span>
+              </span>
+            </div>
+            <a href="I04-disponibilidad.html" class="btn btn-primary">
+              Ver disponibilidad
+            </a>
+          </footer>
+        </article>
+
+        <!-- C04: Cancha activa -->
+        <article class="cancha-card">
+          <div class="cancha-imagen">
+            <div class="cancha-imagen-placeholder">
+              <span class="cancha-imagen-icon">🏐</span>
+              <span class="cancha-imagen-tipo">VÓLEIBOL</span>
+            </div>
+            <div class="cancha-estado-badge">
+              <span class="badge badge-disponible">Activa</span>
+            </div>
+          </div>
+          <div class="cancha-body">
+            <span class="cancha-categoria">Vóleibol</span>
+            <h2 class="cancha-nombre">Cancha de Vóley 1</h2>
+            <p class="cancha-descripcion">
+              Cancha de vóleibol con superficie de arena compacta.
+              Incluye red, postes y área de calentamiento lateral.
+            </p>
+          </div>
+          <footer class="cancha-footer">
+            <div class="cancha-precio">
+              <span class="cancha-precio-label">Precio</span>
+              <span class="cancha-precio-valor">
+                S/ 40 <span class="cancha-precio-unidad">/ hora</span>
+              </span>
+            </div>
+            <a href="I04-disponibilidad.html" class="btn btn-primary">
+              Ver disponibilidad
+            </a>
+          </footer>
+        </article>
+
+        <!-- C05: Cancha activa -->
+        <article class="cancha-card">
+          <div class="cancha-imagen">
+            <div class="cancha-imagen-placeholder">
+              <span class="cancha-imagen-icon">⚽</span>
+              <span class="cancha-imagen-tipo">FÚTBOL SALA</span>
+            </div>
+            <div class="cancha-estado-badge">
+              <span class="badge badge-disponible">Activa</span>
+            </div>
+          </div>
+          <div class="cancha-body">
+            <span class="cancha-categoria">Fútbol sala</span>
+            <h2 class="cancha-nombre">Sala Techada 1</h2>
+            <p class="cancha-descripcion">
+              Cancha techada de fútbol sala con piso de caucho. Ideal para
+              jugar bajo cualquier condición climática.
+            </p>
+          </div>
+          <footer class="cancha-footer">
+            <div class="cancha-precio">
+              <span class="cancha-precio-label">Precio</span>
+              <span class="cancha-precio-valor">
+                S/ 55 <span class="cancha-precio-unidad">/ hora</span>
+              </span>
+            </div>
+            <a href="I04-disponibilidad.html" class="btn btn-primary">
+              Ver disponibilidad
+            </a>
+          </footer>
+        </article>
+
+        <!-- C06: Cancha INACTIVA — regla de negocio: no se puede reservar -->
+        <article class="cancha-card inactiva" aria-label="Cancha inactiva, no disponible para reserva">
+          <div class="cancha-imagen">
+            <div class="cancha-imagen-placeholder">
+              <span class="cancha-imagen-icon">⚽</span>
+              <span class="cancha-imagen-tipo">FÚTBOL 11</span>
+            </div>
+            <div class="cancha-estado-badge">
+              <span class="badge badge-no-disponible">Inactiva</span>
+            </div>
+          </div>
+          <div class="cancha-body">
+            <span class="cancha-categoria">Fútbol</span>
+            <h2 class="cancha-nombre">Cancha Este</h2>
+            <p class="cancha-descripcion">
+              Actualmente en mantenimiento de grass sintético. Estará
+              disponible próximamente.
+            </p>
+          </div>
+          <footer class="cancha-footer">
+            <div class="cancha-precio">
+              <span class="cancha-precio-label">Precio</span>
+              <span class="cancha-precio-valor">
+                S/ 80 <span class="cancha-precio-unidad">/ hora</span>
+              </span>
+            </div>
+            <button type="button" class="btn btn-secondary" disabled aria-disabled="true">
+              No disponible
+            </button>
+          </footer>
+        </article>
+
+      </div><!-- /.canchas-grid -->
+    </section>
+
+  </div><!-- /.page-container -->
+</main>
+
+<!-- ── PIE DE PÁGINA ── -->
+<footer class="site-footer">
+  <p>CanchaYa — Universidad Continental · Ingeniería Web · Grupo 3 · 2026</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+    I07 — Mis reservas
+    Funcionalidad: F13 — Consultar reservas del cliente
+    Sistema: Reserva de Canchas Deportivas
+    Preparado para: Spring Boot + Thymeleaf
+  -->
+  <title>Mis reservas — CanchaYa</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Barra de resumen rápido ── */
+    .reservas-resumen {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+
+    .resumen-stat {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .resumen-stat-valor {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .resumen-stat-label {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      font-weight: 500;
+    }
+
+    .resumen-stat.confirmadas .resumen-stat-valor { color: var(--color-success); }
+    .resumen-stat.pendientes  .resumen-stat-valor { color: var(--color-warning); }
+    .resumen-stat.canceladas  .resumen-stat-valor { color: var(--color-error); }
+
+    /* ── Contenedor de la tabla ── */
+    .reservas-section {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .reservas-section-header {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+      background-color: #FAFBFC;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .reservas-section-title {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    /* ── Celda de cancha: icono + nombre ── */
+    .cancha-cell {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .cancha-cell-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .cancha-cell-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .cancha-cell-nombre {
+      font-weight: 600;
+      color: var(--color-text);
+      font-size: var(--text-sm);
+      line-height: 1.2;
+    }
+
+    .cancha-cell-tipo {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* ── Columna de horario ── */
+    .horario-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .horario-cell-rango {
+      font-weight: 600;
+      font-size: var(--text-sm);
+      color: var(--color-text);
+    }
+
+    .horario-cell-duracion {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* ── Estado de pago en tabla ── */
+    .pago-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .pago-cell-monto {
+      font-weight: 700;
+      font-size: var(--text-sm);
+      color: var(--color-text);
+    }
+
+    .pago-cell-estado {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* ── Estado vacío ── */
+    /*
+      En Thymeleaf: th:if="${#lists.isEmpty(reservas)}"
+    */
+    .reservas-empty {
+      padding: var(--space-16) var(--space-6);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .reservas-empty-icon {
+      font-size: 2.5rem;
+      opacity: 0.35;
+    }
+
+    .reservas-empty-titulo {
+      font-size: var(--text-lg);
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .reservas-empty-desc {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      max-width: 320px;
+      line-height: 1.6;
+    }
+
+    /* ── Responsive: tabla → tarjetas en móvil ── */
+    .tabla-desktop { display: block; }
+    .tarjetas-mobile { display: none; }
+
+    @media (max-width: 900px) {
+      .reservas-resumen { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 680px) {
+      .tabla-desktop { display: none; }
+      .tarjetas-mobile { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5); }
+
+      .reserva-tarjeta {
+        background-color: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: var(--space-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+
+      .reserva-tarjeta-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--space-3);
+      }
+
+      .reserva-tarjeta-codigo {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        font-weight: 600;
+      }
+
+      .reserva-tarjeta-cancha {
+        font-size: var(--text-base);
+        font-weight: 700;
+        color: var(--color-text);
+      }
+
+      .reserva-tarjeta-tipo {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+      }
+
+      .reserva-tarjeta-fila {
+        display: flex;
+        justify-content: space-between;
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        gap: var(--space-2);
+      }
+
+      .reserva-tarjeta-fila span:last-child {
+        font-weight: 600;
+        color: var(--color-text);
+        text-align: right;
+      }
+
+      .reserva-tarjeta-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding-top: var(--space-3);
+        border-top: 1px solid var(--color-border);
+      }
+
+      .reservas-resumen { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .reservas-section-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVEGACIÓN ── -->
+<header class="site-header">
+  <nav class="nav-inner" aria-label="Navegación principal">
+    <a href="I03-catalogo.html" class="nav-brand">
+      <div class="nav-brand-icon">⚽</div>
+      <span class="nav-brand-name">Cancha<span>Ya</span></span>
+    </a>
+
+    <ul class="nav-links" role="list">
+      <li><a href="I03-catalogo.html" class="nav-link">Canchas</a></li>
+      <li><a href="I07-mis-reservas.html" class="nav-link active" aria-current="page">Mis reservas</a></li>
+      <li><a href="I20-perfil.html" class="nav-link">Mi perfil</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="nav-user">
+        <div class="nav-avatar" aria-hidden="true">JH</div>
+        <span>José Huaranga</span>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ── CONTENIDO PRINCIPAL ── -->
+<main>
+  <div class="page-container">
+
+    <header class="page-header">
+      <h1 class="page-title">Mis reservas</h1>
+      <p class="page-subtitle">Consulta el historial y estado de tus reservas.</p>
+    </header>
+
+    <!-- Resumen rápido de estados -->
+    <!--
+      En Thymeleaf: los contadores se calculan en el controlador
+      th:text="${totalConfirmadas}", etc.
+    -->
+    <section aria-label="Resumen de reservas">
+      <div class="reservas-resumen">
+        <div class="resumen-stat confirmadas">
+          <span class="resumen-stat-valor">2</span>
+          <span class="resumen-stat-label">Confirmadas</span>
+        </div>
+        <div class="resumen-stat pendientes">
+          <span class="resumen-stat-valor">1</span>
+          <span class="resumen-stat-label">Pendientes de pago</span>
+        </div>
+        <div class="resumen-stat canceladas">
+          <span class="resumen-stat-valor">1</span>
+          <span class="resumen-stat-label">Canceladas</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabla de reservas -->
+    <!--
+      En Thymeleaf: th:if="${!#lists.isEmpty(reservas)}"
+      Cada fila: th:each="reserva : ${reservas}"
+    -->
+    <section class="reservas-section" aria-labelledby="tabla-titulo">
+
+      <header class="reservas-section-header">
+        <h2 class="reservas-section-title" id="tabla-titulo">
+          Historial de reservas
+        </h2>
+        <a href="I03-catalogo.html" class="btn btn-primary">
+          Nueva reserva
+        </a>
+      </header>
+
+      <!-- ── VERSIÓN ESCRITORIO: tabla ── -->
+      <div class="tabla-desktop">
+        <div class="table-wrapper" style="border:none; border-radius:0;">
+          <table aria-label="Lista de reservas">
+            <thead>
+              <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Cancha</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Horario</th>
+                <th scope="col">Importe</th>
+                <th scope="col">Estado</th>
+                <th scope="col"><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- Reserva 1: Confirmada -->
+              <tr>
+                <td>
+                  <span class="text-sm font-semibold">RSV-2026-0042</span>
+                </td>
+                <td>
+                  <div class="cancha-cell">
+                    <div class="cancha-cell-icon" aria-hidden="true">⚽</div>
+                    <div class="cancha-cell-info">
+                      <span class="cancha-cell-nombre">Cancha Norte</span>
+                      <span class="cancha-cell-tipo">Fútbol 11</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="text-sm">mar 15/09/2026</span>
+                </td>
+                <td>
+                  <div class="horario-cell">
+                    <span class="horario-cell-rango">16:00 – 17:00</span>
+                    <span class="horario-cell-duracion">1 hora</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="pago-cell">
+                    <span class="pago-cell-monto">S/ 80.00</span>
+                    <span class="pago-cell-estado">Pagado</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-confirmada">Confirmada</span>
+                </td>
+                <td>
+                  <!--
+                    En Thymeleaf: <a th:href="@{/reservas/{id}(id=${reserva.id})}">
+                  -->
+                  <a href="I08-detalle-reserva.html" class="btn btn-ghost">
+                    Ver detalle
+                  </a>
+                </td>
+              </tr>
+
+              <!-- Reserva 2: Confirmada -->
+              <tr>
+                <td>
+                  <span class="text-sm font-semibold">RSV-2026-0038</span>
+                </td>
+                <td>
+                  <div class="cancha-cell">
+                    <div class="cancha-cell-icon" aria-hidden="true">🏀</div>
+                    <div class="cancha-cell-info">
+                      <span class="cancha-cell-nombre">Pista Multiusos A</span>
+                      <span class="cancha-cell-tipo">Básquetbol</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="text-sm">vie 05/09/2026</span>
+                </td>
+                <td>
+                  <div class="horario-cell">
+                    <span class="horario-cell-rango">10:00 – 12:00</span>
+                    <span class="horario-cell-duracion">2 horas</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="pago-cell">
+                    <span class="pago-cell-monto">S/ 100.00</span>
+                    <span class="pago-cell-estado">Pagado</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-confirmada">Confirmada</span>
+                </td>
+                <td>
+                  <a href="I08-detalle-reserva.html" class="btn btn-ghost">
+                    Ver detalle
+                  </a>
+                </td>
+              </tr>
+
+              <!-- Reserva 3: Pendiente -->
+              <tr>
+                <td>
+                  <span class="text-sm font-semibold">RSV-2026-0045</span>
+                </td>
+                <td>
+                  <div class="cancha-cell">
+                    <div class="cancha-cell-icon" aria-hidden="true">⚽</div>
+                    <div class="cancha-cell-info">
+                      <span class="cancha-cell-nombre">Cancha Sur</span>
+                      <span class="cancha-cell-tipo">Fútbol 7</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="text-sm">jue 18/09/2026</span>
+                </td>
+                <td>
+                  <div class="horario-cell">
+                    <span class="horario-cell-rango">14:00 – 15:00</span>
+                    <span class="horario-cell-duracion">1 hora</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="pago-cell">
+                    <span class="pago-cell-monto">S/ 60.00</span>
+                    <span class="pago-cell-estado">Pendiente de pago</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-pendiente">Pendiente</span>
+                </td>
+                <td>
+                  <a href="I08-detalle-reserva.html" class="btn btn-ghost">
+                    Ver detalle
+                  </a>
+                </td>
+              </tr>
+
+              <!-- Reserva 4: Cancelada -->
+              <tr>
+                <td>
+                  <span class="text-sm font-semibold">RSV-2026-0031</span>
+                </td>
+                <td>
+                  <div class="cancha-cell">
+                    <div class="cancha-cell-icon" aria-hidden="true">🏐</div>
+                    <div class="cancha-cell-info">
+                      <span class="cancha-cell-nombre">Cancha de Vóley 1</span>
+                      <span class="cancha-cell-tipo">Vóleibol</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="text-sm">lun 25/08/2026</span>
+                </td>
+                <td>
+                  <div class="horario-cell">
+                    <span class="horario-cell-rango">08:00 – 09:00</span>
+                    <span class="horario-cell-duracion">1 hora</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="pago-cell">
+                    <span class="pago-cell-monto">S/ 40.00</span>
+                    <span class="pago-cell-estado">No cobrado</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-cancelada">Cancelada</span>
+                </td>
+                <td>
+                  <a href="I08-detalle-reserva.html" class="btn btn-ghost">
+                    Ver detalle
+                  </a>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- /.tabla-desktop -->
+
+      <!-- ── VERSIÓN MÓVIL: tarjetas ── -->
+      <div class="tarjetas-mobile" aria-label="Lista de reservas">
+
+        <!-- Reserva 1: Confirmada -->
+        <article class="reserva-tarjeta">
+          <div class="reserva-tarjeta-top">
+            <div>
+              <p class="reserva-tarjeta-codigo">RSV-2026-0042</p>
+              <p class="reserva-tarjeta-cancha">Cancha Norte</p>
+              <p class="reserva-tarjeta-tipo">Fútbol 11</p>
+            </div>
+            <span class="badge badge-confirmada">Confirmada</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Fecha</span><span>mar 15/09/2026</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Horario</span><span>16:00 – 17:00 (1 h)</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Importe</span><span>S/ 80.00</span>
+          </div>
+          <div class="reserva-tarjeta-footer">
+            <span class="text-xs text-muted">Pagado</span>
+            <a href="I08-detalle-reserva.html" class="btn btn-ghost">Ver detalle</a>
+          </div>
+        </article>
+
+        <!-- Reserva 2: Confirmada -->
+        <article class="reserva-tarjeta">
+          <div class="reserva-tarjeta-top">
+            <div>
+              <p class="reserva-tarjeta-codigo">RSV-2026-0038</p>
+              <p class="reserva-tarjeta-cancha">Pista Multiusos A</p>
+              <p class="reserva-tarjeta-tipo">Básquetbol</p>
+            </div>
+            <span class="badge badge-confirmada">Confirmada</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Fecha</span><span>vie 05/09/2026</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Horario</span><span>10:00 – 12:00 (2 h)</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Importe</span><span>S/ 100.00</span>
+          </div>
+          <div class="reserva-tarjeta-footer">
+            <span class="text-xs text-muted">Pagado</span>
+            <a href="I08-detalle-reserva.html" class="btn btn-ghost">Ver detalle</a>
+          </div>
+        </article>
+
+        <!-- Reserva 3: Pendiente -->
+        <article class="reserva-tarjeta">
+          <div class="reserva-tarjeta-top">
+            <div>
+              <p class="reserva-tarjeta-codigo">RSV-2026-0045</p>
+              <p class="reserva-tarjeta-cancha">Cancha Sur</p>
+              <p class="reserva-tarjeta-tipo">Fútbol 7</p>
+            </div>
+            <span class="badge badge-pendiente">Pendiente</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Fecha</span><span>jue 18/09/2026</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Horario</span><span>14:00 – 15:00 (1 h)</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Importe</span><span>S/ 60.00</span>
+          </div>
+          <div class="reserva-tarjeta-footer">
+            <span class="text-xs text-muted">Pendiente de pago</span>
+            <a href="I08-detalle-reserva.html" class="btn btn-ghost">Ver detalle</a>
+          </div>
+        </article>
+
+        <!-- Reserva 4: Cancelada -->
+        <article class="reserva-tarjeta">
+          <div class="reserva-tarjeta-top">
+            <div>
+              <p class="reserva-tarjeta-codigo">RSV-2026-0031</p>
+              <p class="reserva-tarjeta-cancha">Cancha de Vóley 1</p>
+              <p class="reserva-tarjeta-tipo">Vóleibol</p>
+            </div>
+            <span class="badge badge-cancelada">Cancelada</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Fecha</span><span>lun 25/08/2026</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Horario</span><span>08:00 – 09:00 (1 h)</span>
+          </div>
+          <div class="reserva-tarjeta-fila">
+            <span>Importe</span><span>S/ 40.00</span>
+          </div>
+          <div class="reserva-tarjeta-footer">
+            <span class="text-xs text-muted">No cobrado</span>
+            <a href="I08-detalle-reserva.html" class="btn btn-ghost">Ver detalle</a>
+          </div>
+        </article>
+
+      </div>
+      <!-- /.tarjetas-mobile -->
+
+      <!-- Estado vacío — En Thymeleaf: th:if="${#lists.isEmpty(reservas)}" -->
+      <!--
+      <div class="reservas-empty">
+        <span class="reservas-empty-icon" aria-hidden="true">📋</span>
+        <p class="reservas-empty-titulo">No tienes reservas registradas.</p>
+        <p class="reservas-empty-desc">
+          Cuando realices una reserva aparecerá aquí con todos sus detalles y estado.
+        </p>
+        <a href="I03-catalogo.html" class="btn btn-primary">Ver canchas disponibles</a>
+      </div>
+      -->
+
+    </section>
+
+  </div><!-- /.page-container -->
+</main>
+
+<!-- ── PIE DE PÁGINA ── -->
+<footer class="site-footer">
+  <p>CanchaYa — Universidad Continental · Ingeniería Web · Grupo 3 · 2026</p>
+</footer>
+
+</body>
+</html>

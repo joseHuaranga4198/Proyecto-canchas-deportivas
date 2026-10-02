@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+    I10 — Gestión de canchas
+    Funcionalidad: F06 — Consultar canchas (vista administrativa)
+    Sistema: Reserva de Canchas Deportivas
+    Preparado para: Spring Boot + Thymeleaf
+
+    Esta interfaz permite al administrador visualizar las canchas registradas.
+    Sirve como punto de entrada visual hacia:
+      - I11 Registrar cancha  (F05)
+      - I12 Editar cancha     (F07)
+      - I13 Inactivar cancha  (F08)
+    Estas tres interfaces NO se implementan todavía: solo se dejan
+    los enlaces/botones preparados.
+  -->
+  <title>Gestión de canchas — CanchaYa</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Cabecera de sección: título + acción principal ── */
+    .gestion-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-5);
+    }
+
+    .resultados-info {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-5);
+    }
+
+    .resultados-info strong {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    /* ── Contenedor de la sección con tabla ── */
+    .canchas-section {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .canchas-section-header {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+      background-color: #FAFBFC;
+    }
+
+    .canchas-section-title {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    /* ── Celda de cancha: icono + nombre + tipo ── */
+    .cancha-cell {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .cancha-cell-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .cancha-cell-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .cancha-cell-nombre {
+      font-weight: 600;
+      color: var(--color-text);
+      font-size: var(--text-sm);
+      line-height: 1.2;
+    }
+
+    .cancha-cell-tipo {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* ── Celda de precio ── */
+    .precio-cell {
+      font-weight: 700;
+      color: var(--color-text);
+      font-size: var(--text-sm);
+    }
+
+    .precio-cell-unidad {
+      font-weight: 400;
+      color: var(--color-text-muted);
+      font-size: var(--text-xs);
+    }
+
+    /* ── Celda de acciones ── */
+    .acciones-cell {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .btn-sm {
+      padding: var(--space-2) var(--space-4);
+      font-size: var(--text-xs);
+    }
+
+    /* ── Responsive: tabla → tarjetas en móvil ── */
+    .tabla-desktop { display: block; }
+    .tarjetas-mobile { display: none; }
+
+    @media (max-width: 680px) {
+      .tabla-desktop { display: none; }
+      .tarjetas-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        padding: var(--space-5);
+      }
+
+      .cancha-admin-tarjeta {
+        background-color: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: var(--space-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+
+      .cancha-admin-tarjeta-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--space-3);
+      }
+
+      .cancha-admin-tarjeta-codigo {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        font-weight: 600;
+      }
+
+      .cancha-admin-tarjeta-nombre {
+        font-size: var(--text-base);
+        font-weight: 700;
+        color: var(--color-text);
+      }
+
+      .cancha-admin-tarjeta-tipo {
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+      }
+
+      .cancha-admin-tarjeta-fila {
+        display: flex;
+        justify-content: space-between;
+        font-size: var(--text-sm);
+        color: var(--color-text-muted);
+        gap: var(--space-2);
+      }
+
+      .cancha-admin-tarjeta-fila span:last-child {
+        font-weight: 600;
+        color: var(--color-text);
+        text-align: right;
+      }
+
+      .cancha-admin-tarjeta-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: var(--space-2);
+        padding-top: var(--space-3);
+        border-top: 1px solid var(--color-border);
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .gestion-header .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVEGACIÓN ADMINISTRATIVA ── -->
+<header class="site-header">
+  <nav class="nav-inner" aria-label="Navegación administrativa">
+    <a href="I09-panel-administrativo.html" class="nav-brand">
+      <div class="nav-brand-icon">⚽</div>
+      <span class="nav-brand-name">Cancha<span>Ya</span> <span style="color:rgba(255,255,255,0.4); font-weight:600;">Admin</span></span>
+    </a>
+
+    <ul class="nav-links" role="list">
+      <li><a href="I09-panel-administrativo.html" class="nav-link">Panel</a></li>
+      <li><a href="I10-gestion-canchas.html" class="nav-link active" aria-current="page">Canchas</a></li>
+      <li><a href="I14-gestion-clientes.html" class="nav-link">Clientes</a></li>
+      <li><a href="I15-gestion-reservas.html" class="nav-link">Reservas</a></li>
+      <li><a href="I16-gestion-pagos.html" class="nav-link">Pagos</a></li>
+      <li><a href="I17-metricas.html" class="nav-link">Métricas</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="nav-user">
+        <div class="nav-avatar" aria-hidden="true">RA</div>
+        <span>Rosa Alcántara</span>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ── CONTENIDO PRINCIPAL ── -->
+<main>
+  <div class="page-container">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Ruta de navegación">
+      <a href="I09-panel-administrativo.html" class="breadcrumb-item">Panel administrativo</a>
+      <span class="breadcrumb-sep" aria-hidden="true">›</span>
+      <span class="breadcrumb-item active" aria-current="page">Gestión de canchas</span>
+    </nav>
+
+    <!-- Cabecera de sección -->
+    <div class="gestion-header">
+      <div>
+        <h1 class="page-title">Gestión de canchas</h1>
+        <p class="page-subtitle">Consulta las canchas registradas y su estado en el sistema.</p>
+      </div>
+
+      <!--
+        Acceso preparado hacia I11 — Registrar cancha (F05).
+        Aún no implementada; el enlace queda listo para la siguiente interfaz.
+      -->
+      <a href="I11-registrar-cancha.html" class="btn btn-primary btn-lg">
+        + Registrar cancha
+      </a>
+    </div>
+
+    <!-- Contador de resultados -->
+    <p class="resultados-info">
+      Mostrando <strong>6 canchas</strong> registradas.
+    </p>
+
+    <!-- Listado de canchas -->
+    <!--
+      En Thymeleaf: th:each="cancha : ${canchas}"
+      Los valores de nombre, tipo, ubicación, precio y estado
+      vienen del modelo entregado por el controlador administrativo.
+    -->
+    <section class="canchas-section" aria-labelledby="tabla-canchas-titulo">
+
+      <header class="canchas-section-header">
+        <h2 class="canchas-section-title" id="tabla-canchas-titulo">Canchas registradas</h2>
+      </header>
+
+      <!-- ── VERSIÓN ESCRITORIO: tabla ── -->
+      <div class="tabla-desktop">
+        <div class="table-wrapper" style="border:none; border-radius:0;">
+          <table aria-label="Lista de canchas registradas">
+            <thead>
+              <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Cancha</th>
+                <th scope="col">Ubicación</th>
+                <th scope="col">Precio por hora</th>
+                <th scope="col">Estado</th>
+                <th scope="col"><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- C01: Activa -->
+              <tr>
+                <td><span class="text-sm font-semibold">C01</span></td>
+                <td>
+                  <div class="cancha-cell">
+                    <div class="cancha-cell-icon" aria-hidden="true">⚽</div>
+                    <div class="cancha-cell-info">
+                      <span class="cancha-cell-nombre">Cancha Norte</span>
+                      <span class="cancha-cell-tipo">Fútbol · Fútbol 11</span>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="text-sm">Sede Central — Bloque A</span></td>
+                <td>
+                  <span class="precio-cell">S/ 80.00 <span class="precio-cell-unidad">/ hora</span></span>
+                </td>
+                <td><span class="badge badge-disponible">Activa</span></td>
+                <td>
+                  <div class="acciones-cell">
+                    <!-- Preparado para I12 — Editar cancha (F07) -->
+                    <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+                    <!-- Preparado para I13 — Inactivar cancha (F08) -->
+                    <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Inactivar</a>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- C02: Activa -->
+              <tr>
+                <td><span class="text-sm font-semibold">C02</span></td>
+                <td>
+                  <div class="cancha-cell">
+                    <div class="cancha-cell-icon" aria-hidden="true">⚽</div>
+                    <div class="cancha-cell-info">
+                      <span class="cancha-cell-nombre">Cancha Sur</span>
+                      <span class="cancha-cell-tipo">Fútbol · Fútbol 7</span>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="text-sm">Sede Central — Bloque B</span></td>
+                <td>
+                  <span class="precio-cell">S/ 60.00 <span class="precio-cell-unidad">/ hora</span></span>
+                </td>
+                <td><span class="badge badge-disponible">Activa</span></td>
+                <td>
+                  <div class="acciones-cell">
+                    <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+                    <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Inactivar</a>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- C03: Activa -->
+              <tr>
+                <td><span class="text-sm font-semibold">C03</span></td>
+                <td>
+                  <div class="cancha-cell">
+                    <div class="cancha-cell-icon" aria-hidden="true">🏀</div>
+                    <div class="cancha-cell-info">
+                      <span class="cancha-cell-nombre">Pista Multiusos A</span>
+                      <span class="cancha-cell-tipo">Básquetbol</span>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="text-sm">Sede Central — Techado</span></td>
+                <td>
+                  <span class="precio-cell">S/ 50.00 <span class="precio-cell-unidad">/ hora</span></span>
+                </td>
+                <td><span class="badge badge-disponible">Activa</span></td>
+                <td>
+                  <div class="acciones-cell">
+                    <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+                    <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Inactivar</a>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- C04: Activa -->
+              <tr>
+                <td><span class="text-sm font-semibold">C04</span></td>
+                <td>
+                  <div class="cancha-cell">
+                    <div class="cancha-cell-icon" aria-hidden="true">🏐</div>
+                    <div class="cancha-cell-info">
+                      <span class="cancha-cell-nombre">Cancha de Vóley 1</span>
+                      <span class="cancha-cell-tipo">Vóleibol</span>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="text-sm">Sede Central — Exterior</span></td>
+                <td>
+                  <span class="precio-cell">S/ 40.00 <span class="precio-cell-unidad">/ hora</span></span>
+                </td>
+                <td><span class="badge badge-disponible">Activa</span></td>
+                <td>
+                  <div class="acciones-cell">
+                    <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+                    <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Inactivar</a>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- C05: Activa -->
+              <tr>
+                <td><span class="text-sm font-semibold">C05</span></td>
+                <td>
+                  <div class="cancha-cell">
+                    <div class="cancha-cell-icon" aria-hidden="true">⚽</div>
+                    <div class="cancha-cell-info">
+                      <span class="cancha-cell-nombre">Sala Techada 1</span>
+                      <span class="cancha-cell-tipo">Fútbol · Fútbol sala</span>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="text-sm">Sede Central — Techado</span></td>
+                <td>
+                  <span class="precio-cell">S/ 55.00 <span class="precio-cell-unidad">/ hora</span></span>
+                </td>
+                <td><span class="badge badge-disponible">Activa</span></td>
+                <td>
+                  <div class="acciones-cell">
+                    <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+                    <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Inactivar</a>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- C06: Inactiva -->
+              <tr>
+                <td><span class="text-sm font-semibold">C06</span></td>
+                <td>
+                  <div class="cancha-cell">
+                    <div class="cancha-cell-icon" aria-hidden="true">⚽</div>
+                    <div class="cancha-cell-info">
+                      <span class="cancha-cell-nombre">Cancha Este</span>
+                      <span class="cancha-cell-tipo">Fútbol · Fútbol 11</span>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="text-sm">Sede Central — Bloque C</span></td>
+                <td>
+                  <span class="precio-cell">S/ 80.00 <span class="precio-cell-unidad">/ hora</span></span>
+                </td>
+                <td><span class="badge badge-no-disponible">Inactiva</span></td>
+                <td>
+                  <div class="acciones-cell">
+                    <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+                    <!--
+                      Regla de negocio: una cancha inactiva no puede utilizarse
+                      para nuevas reservas. Aquí se ofrecería reactivarla (I13).
+                    -->
+                    <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Activar</a>
+                  </div>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- /.tabla-desktop -->
+
+      <!-- ── VERSIÓN MÓVIL: tarjetas ── -->
+      <div class="tarjetas-mobile" aria-label="Lista de canchas registradas">
+
+        <!-- C01 -->
+        <article class="cancha-admin-tarjeta">
+          <div class="cancha-admin-tarjeta-top">
+            <div>
+              <p class="cancha-admin-tarjeta-codigo">C01</p>
+              <p class="cancha-admin-tarjeta-nombre">Cancha Norte</p>
+              <p class="cancha-admin-tarjeta-tipo">Fútbol · Fútbol 11</p>
+            </div>
+            <span class="badge badge-disponible">Activa</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Ubicación</span><span>Sede Central — Bloque A</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Precio</span><span>S/ 80.00 / hora</span>
+          </div>
+          <div class="cancha-admin-tarjeta-footer">
+            <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+            <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Inactivar</a>
+          </div>
+        </article>
+
+        <!-- C02 -->
+        <article class="cancha-admin-tarjeta">
+          <div class="cancha-admin-tarjeta-top">
+            <div>
+              <p class="cancha-admin-tarjeta-codigo">C02</p>
+              <p class="cancha-admin-tarjeta-nombre">Cancha Sur</p>
+              <p class="cancha-admin-tarjeta-tipo">Fútbol · Fútbol 7</p>
+            </div>
+            <span class="badge badge-disponible">Activa</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Ubicación</span><span>Sede Central — Bloque B</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Precio</span><span>S/ 60.00 / hora</span>
+          </div>
+          <div class="cancha-admin-tarjeta-footer">
+            <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+            <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Inactivar</a>
+          </div>
+        </article>
+
+        <!-- C03 -->
+        <article class="cancha-admin-tarjeta">
+          <div class="cancha-admin-tarjeta-top">
+            <div>
+              <p class="cancha-admin-tarjeta-codigo">C03</p>
+              <p class="cancha-admin-tarjeta-nombre">Pista Multiusos A</p>
+              <p class="cancha-admin-tarjeta-tipo">Básquetbol</p>
+            </div>
+            <span class="badge badge-disponible">Activa</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Ubicación</span><span>Sede Central — Techado</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Precio</span><span>S/ 50.00 / hora</span>
+          </div>
+          <div class="cancha-admin-tarjeta-footer">
+            <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+            <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Inactivar</a>
+          </div>
+        </article>
+
+        <!-- C04 -->
+        <article class="cancha-admin-tarjeta">
+          <div class="cancha-admin-tarjeta-top">
+            <div>
+              <p class="cancha-admin-tarjeta-codigo">C04</p>
+              <p class="cancha-admin-tarjeta-nombre">Cancha de Vóley 1</p>
+              <p class="cancha-admin-tarjeta-tipo">Vóleibol</p>
+            </div>
+            <span class="badge badge-disponible">Activa</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Ubicación</span><span>Sede Central — Exterior</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Precio</span><span>S/ 40.00 / hora</span>
+          </div>
+          <div class="cancha-admin-tarjeta-footer">
+            <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+            <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Inactivar</a>
+          </div>
+        </article>
+
+        <!-- C05 -->
+        <article class="cancha-admin-tarjeta">
+          <div class="cancha-admin-tarjeta-top">
+            <div>
+              <p class="cancha-admin-tarjeta-codigo">C05</p>
+              <p class="cancha-admin-tarjeta-nombre">Sala Techada 1</p>
+              <p class="cancha-admin-tarjeta-tipo">Fútbol · Fútbol sala</p>
+            </div>
+            <span class="badge badge-disponible">Activa</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Ubicación</span><span>Sede Central — Techado</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Precio</span><span>S/ 55.00 / hora</span>
+          </div>
+          <div class="cancha-admin-tarjeta-footer">
+            <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+            <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Inactivar</a>
+          </div>
+        </article>
+
+        <!-- C06: Inactiva -->
+        <article class="cancha-admin-tarjeta">
+          <div class="cancha-admin-tarjeta-top">
+            <div>
+              <p class="cancha-admin-tarjeta-codigo">C06</p>
+              <p class="cancha-admin-tarjeta-nombre">Cancha Este</p>
+              <p class="cancha-admin-tarjeta-tipo">Fútbol · Fútbol 11</p>
+            </div>
+            <span class="badge badge-no-disponible">Inactiva</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Ubicación</span><span>Sede Central — Bloque C</span>
+          </div>
+          <div class="cancha-admin-tarjeta-fila">
+            <span>Precio</span><span>S/ 80.00 / hora</span>
+          </div>
+          <div class="cancha-admin-tarjeta-footer">
+            <a href="I12-editar-cancha.html" class="btn btn-ghost btn-sm">Editar</a>
+            <a href="I13-inactivar-cancha.html" class="btn btn-secondary btn-sm">Activar</a>
+          </div>
+        </article>
+
+      </div>
+      <!-- /.tarjetas-mobile -->
+
+    </section>
+
+  </div><!-- /.page-container -->
+</main>
+
+<!-- ── PIE DE PÁGINA ── -->
+<footer class="site-footer">
+  <p>CanchaYa — Universidad Continental · Ingeniería Web · Grupo 3 · 2026</p>
+</footer>
+
+</body>
+</html>
