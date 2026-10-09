@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+    I01 — Inicio de sesión
+    Funcionalidad: F09 — Autenticar usuario
+    Sistema: Reserva de Canchas Deportivas
+    Preparado para: Spring Boot + Thymeleaf
+  -->
+  <title>Inicio de sesión — CanchaYa</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Layout exclusivo de la pantalla de login ── */
+
+    body {
+      background-color: var(--color-nav);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .login-wrapper {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    /* Panel izquierdo: identidad del sistema */
+    .login-brand-panel {
+      background: linear-gradient(
+        160deg,
+        #16213E 0%,
+        #1A1A2E 50%,
+        #0D1117 100%
+      );
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: var(--space-16) var(--space-12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decoración geométrica de fondo */
+    .login-brand-panel::before {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      right: -80px;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: rgba(46,204,113,0.06);
+      pointer-events: none;
+    }
+
+    .login-brand-panel::after {
+      content: '';
+      position: absolute;
+      top: 60px;
+      right: 60px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 2px solid rgba(46,204,113,0.12);
+      pointer-events: none;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      margin-bottom: var(--space-12);
+    }
+
+    .brand-logo-icon {
+      width: 52px;
+      height: 52px;
+      background-color: var(--color-primary);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-text {
+      font-size: var(--text-2xl);
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-logo-text span {
+      color: var(--color-primary);
+    }
+
+    .brand-tagline {
+      font-size: var(--text-3xl);
+      font-weight: 700;
+      color: #FFFFFF;
+      line-height: 1.25;
+      letter-spacing: -0.03em;
+      margin-bottom: var(--space-5);
+    }
+
+    .brand-tagline em {
+      font-style: normal;
+      color: var(--color-primary);
+    }
+
+    .brand-description {
+      color: rgba(255,255,255,0.55);
+      font-size: var(--text-base);
+      line-height: 1.7;
+      max-width: 380px;
+    }
+
+    .brand-features {
+      margin-top: var(--space-10);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .brand-feature {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      color: rgba(255,255,255,0.65);
+      font-size: var(--text-sm);
+    }
+
+    .brand-feature-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-primary);
+      flex-shrink: 0;
+    }
+
+    /* Panel derecho: formulario */
+    .login-form-panel {
+      background-color: var(--color-bg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: var(--space-12) var(--space-8);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .login-card-header {
+      margin-bottom: var(--space-8);
+    }
+
+    .login-title {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: -0.02em;
+    }
+
+    .login-subtitle {
+      margin-top: var(--space-2);
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+
+    .login-form-body {
+      background-color: var(--color-surface);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Área de error de autenticación */
+    .auth-error {
+      background-color: var(--color-error-lt);
+      border: 1px solid rgba(231,76,60,0.3);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      margin-bottom: var(--space-5);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      /* Oculto por defecto: Thymeleaf lo muestra con th:if="${error}" */
+      display: none;
+    }
+
+    /* Clase auxiliar para mostrar el error en HTML estático */
+    .auth-error.visible {
+      display: flex;
+    }
+
+    .auth-error-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .auth-error-text {
+      font-size: var(--text-sm);
+      color: #922B21;
+      line-height: 1.5;
+    }
+
+    .auth-error-title {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* Separador antes del enlace a registro */
+    .login-footer-links {
+      margin-top: var(--space-6);
+      text-align: center;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    .login-footer-links a {
+      color: var(--color-primary-dk);
+      font-weight: 600;
+      transition: color var(--transition);
+    }
+
+    .login-footer-links a:hover {
+      color: var(--color-primary);
+      text-decoration: underline;
+    }
+
+    .login-legal {
+      margin-top: var(--space-8);
+      text-align: center;
+      font-size: var(--text-xs);
+      color: rgba(255,255,255,0.3);
+    }
+
+    /* ── Responsive: móvil oculta el panel de marca ── */
+    @media (max-width: 768px) {
+      .login-wrapper {
+        grid-template-columns: 1fr;
+      }
+      .login-brand-panel {
+        display: none;
+      }
+      .login-form-panel {
+        padding: var(--space-8) var(--space-4);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+
+  <!-- Panel izquierdo: identidad del sistema -->
+  <aside class="login-brand-panel" aria-hidden="true">
+    <div class="brand-logo">
+      <div class="brand-logo-icon">⚽</div>
+      <span class="brand-logo-text">Cancha<span>Ya</span></span>
+    </div>
+
+    <h1 class="brand-tagline">
+      Reserva tu cancha<br>
+      <em>cuando quieras.</em>
+    </h1>
+
+    <p class="brand-description">
+      Consulta la disponibilidad, elige tu horario y confirma
+      tu reserva en minutos. Sin llamadas, sin esperas.
+    </p>
+
+    <ul class="brand-features">
+      <li class="brand-feature">
+        <span class="brand-feature-dot"></span>
+        Consulta canchas disponibles en tiempo real
+      </li>
+      <li class="brand-feature">
+        <span class="brand-feature-dot"></span>
+        Reserva y paga desde la plataforma
+      </li>
+      <li class="brand-feature">
+        <span class="brand-feature-dot"></span>
+        Gestiona y cancela tus reservas cuando necesites
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Panel derecho: formulario de acceso -->
+  <section class="login-form-panel">
+    <div class="login-card">
+
+      <header class="login-card-header">
+        <!-- Logo visible solo en móvil -->
+        <div class="brand-logo" style="display:none; margin-bottom: var(--space-6);" aria-hidden="true"
+             id="mobile-brand">
+          <div class="brand-logo-icon">⚽</div>
+          <span class="brand-logo-text" style="color: var(--color-text);">Cancha<span>Ya</span></span>
+        </div>
+        <h2 class="login-title">Inicio de sesión</h2>
+        <p class="login-subtitle">Accede con tu correo y contraseña registrados.</p>
+      </header>
+
+      <div class="login-form-body">
+
+        <!--
+          ZONA DE ERROR DE AUTENTICACIÓN
+          En Thymeleaf: <div th:if="${param.error}" class="auth-error visible">
+          Para demostración estática, agregar clase "visible" al div
+        -->
+        <div class="auth-error" id="auth-error" role="alert">
+          <span class="auth-error-icon">⚠</span>
+          <div class="auth-error-text">
+            <span class="auth-error-title">No se pudo iniciar sesión</span>
+            Correo o contraseña incorrectos. Verifica tus datos e intenta nuevamente.
+          </div>
+        </div>
+
+        <!--
+          En Spring Security / Thymeleaf:
+          <form method="post" th:action="@{/login}">
+        -->
+        <form action="I03-catalogo.html" method="get" id="login-form" novalidate>
+
+          <div class="form-group">
+            <label class="form-label" for="correo">
+              Correo electrónico
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              class="form-input"
+              type="email"
+              id="correo"
+              name="correo"
+              placeholder="tucorreo@ejemplo.com"
+              autocomplete="email"
+              required
+              aria-required="true"
+              aria-describedby="correo-hint"
+            >
+            <span class="form-hint" id="correo-hint">
+              El mismo correo con el que te registraste.
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="contrasena">
+              Contraseña
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input
+              class="form-input"
+              type="password"
+              id="contrasena"
+              name="contrasena"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+              aria-required="true"
+            >
+          </div>
+
+          <!--
+            Nota académica: el sistema no contempla recuperación de contraseña
+            según el alcance definido en el documento de negocio.
+          -->
+
+          <button
+            type="submit"
+            class="btn btn-primary btn-lg btn-full"
+            aria-label="Iniciar sesión en el sistema"
+          >
+            Iniciar sesión
+          </button>
+
+        </form>
+      </div>
+
+      <!-- Enlace a registro -->
+      <div class="login-footer-links">
+        ¿Aún no tienes cuenta?
+        <a href="I02-registro.html">Regístrate aquí</a>
+      </div>
+
+    </div><!-- /.login-card -->
+
+    <p class="login-legal">
+      Universidad Continental — Ingeniería Web · Grupo 3 · 2026
+    </p>
+
+  </section><!-- /.login-form-panel -->
+
+</div><!-- /.login-wrapper -->
+
+<!--
+  JavaScript mínimo: solo para mostrar el logo en versión móvil
+  La lógica de autenticación la maneja Spring Security en el backend
+-->
+<script>
+  // Mostrar el logo de marca en pantallas pequeñas
+  function adjustMobileBrand() {
+    var mobileBrand = document.getElementById('mobile-brand');
+    if (mobileBrand) {
+      mobileBrand.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+    }
+  }
+  adjustMobileBrand();
+  window.addEventListener('resize', adjustMobileBrand);
+
+  /*
+    DEMOSTRACIÓN ESTÁTICA: para simular un error de autenticación,
+    descomenta la siguiente línea. En producción, Thymeleaf renderizará
+    el bloque condicionalmente con th:if="${param.error}".
+  */
+  // document.getElementById('auth-error').classList.add('visible');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+    I04 — Disponibilidad
+    Funcionalidad: F10 — Consultar disponibilidad de cancha
+    Sistema: Reserva de Canchas Deportivas
+    Preparado para: Spring Boot + Thymeleaf
+  -->
+  <title>Disponibilidad — CanchaYa</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+
+    /* ── Layout de dos columnas: formulario + panel cancha ── */
+    .disponibilidad-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: var(--space-8);
+      align-items: start;
+    }
+
+    /* ── Panel derecho: datos de la cancha ── */
+    .cancha-panel {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: sticky;
+      top: calc(var(--nav-height) + var(--space-6));
+    }
+
+    .cancha-panel-imagen {
+      width: 100%;
+      height: 140px;
+      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: var(--space-2);
+      position: relative;
+    }
+
+    .cancha-panel-imagen::after {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border: 1.5px solid rgba(46,204,113,0.2);
+      border-radius: 4px;
+    }
+
+    .cancha-panel-icon {
+      font-size: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cancha-panel-tipo {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.08em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cancha-panel-body {
+      padding: var(--space-5);
+    }
+
+    .cancha-panel-categoria {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--color-primary-dk);
+      letter-spacing: 0.04em;
+      margin-bottom: var(--space-1);
+    }
+
+    .cancha-panel-nombre {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--color-text);
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-3);
+    }
+
+    .cancha-panel-descripcion {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      line-height: 1.55;
+      margin-bottom: var(--space-4);
+    }
+
+    .cancha-panel-precio {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-1);
+      padding: var(--space-3) var(--space-4);
+      background-color: var(--color-primary-lt);
+      border-radius: var(--radius-md);
+    }
+
+    .cancha-panel-precio-valor {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      color: var(--color-primary-dk);
+      letter-spacing: -0.03em;
+    }
+
+    .cancha-panel-precio-unidad {
+      font-size: var(--text-sm);
+      color: var(--color-primary-dk);
+      font-weight: 500;
+    }
+
+    /* ── Columna izquierda ── */
+    .disponibilidad-main {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+    }
+
+    /* ── Formulario de consulta ── */
+    .consulta-card {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .consulta-card-header {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+      background-color: #FAFBFC;
+    }
+
+    .consulta-card-title {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .consulta-card-body {
+      padding: var(--space-6);
+    }
+
+    /* ── Grilla de horarios ── */
+    .horarios-section {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .horarios-header {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+      background-color: #FAFBFC;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .horarios-title {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .horarios-fecha-label {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    .horarios-leyenda {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      padding: var(--space-3) var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+      background-color: #FAFBFC;
+    }
+
+    .leyenda-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .leyenda-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .leyenda-dot.disponible  { background-color: var(--color-primary-lt); border: 1.5px solid var(--color-primary-dk); }
+    .leyenda-dot.ocupado     { background-color: #FEE2E2; border: 1.5px solid #EF4444; }
+    .leyenda-dot.seleccionado{ background-color: var(--color-primary); border: 1.5px solid var(--color-primary-dk); }
+
+    .horarios-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-3);
+      padding: var(--space-6);
+    }
+
+    /* Cada bloque horario es un label + radio oculto */
+    .horario-slot {
+      position: relative;
+    }
+
+    .horario-slot input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .horario-slot-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: var(--space-3) var(--space-2);
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--color-border);
+      background-color: var(--color-primary-lt);
+      cursor: pointer;
+      transition: border-color var(--transition), background-color var(--transition);
+      text-align: center;
+      user-select: none;
+    }
+
+    .horario-slot-hora {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--color-primary-dk);
+      line-height: 1;
+    }
+
+    .horario-slot-estado {
+      font-size: 10px;
+      color: var(--color-primary-dk);
+      font-weight: 500;
+    }
+
+    /* Hover en disponible */
+    .horario-slot input[type="radio"]:not(:disabled) + .horario-slot-label:hover {
+      border-color: var(--color-primary);
+      background-color: #B7F0D0;
+    }
+
+    /* Seleccionado */
+    .horario-slot input[type="radio"]:checked + .horario-slot-label {
+      background-color: var(--color-primary);
+      border-color: var(--color-primary-dk);
+    }
+
+    .horario-slot input[type="radio"]:checked + .horario-slot-label .horario-slot-hora,
+    .horario-slot input[type="radio"]:checked + .horario-slot-label .horario-slot-estado {
+      color: #fff;
+    }
+
+    /* Ocupado */
+    .horario-slot.ocupado .horario-slot-label {
+      background-color: #FEE2E2;
+      border-color: #FECACA;
+      cursor: not-allowed;
+    }
+
+    .horario-slot.ocupado .horario-slot-hora {
+      color: #EF4444;
+    }
+
+    .horario-slot.ocupado .horario-slot-estado {
+      color: #EF4444;
+    }
+
+    /* ── Resultado de disponibilidad ── */
+    /*
+      En Thymeleaf: visible condicionalmente con th:if="${resultado != null}"
+      Para demo estática se controla con la clase CSS "visible"
+    */
+    .resultado-disponibilidad {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: none; /* Thymeleaf: th:classappend="${resultado != null} ? '' : 'd-none'" */
+    }
+
+    .resultado-disponibilidad.visible {
+      display: block;
+    }
+
+    .resultado-header {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .resultado-title {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .resultado-body {
+      padding: var(--space-6);
+    }
+
+    .resultado-estado {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      padding: var(--space-5);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-5);
+    }
+
+    .resultado-estado.disponible {
+      background-color: var(--color-success-lt);
+      border: 1px solid rgba(39,174,96,0.3);
+    }
+
+    .resultado-estado.no-disponible {
+      background-color: var(--color-error-lt);
+      border: 1px solid rgba(231,76,60,0.3);
+    }
+
+    .resultado-estado-icon {
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+
+    .resultado-estado-texto strong {
+      display: block;
+      font-size: var(--text-base);
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 2px;
+    }
+
+    .resultado-estado-texto span {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    .resultado-resumen {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+
+    .resultado-dato {
+      background-color: var(--color-bg);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+    }
+
+    .resultado-dato-label {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .resultado-dato-valor {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    @media (max-width: 900px) {
+      .disponibilidad-layout {
+        grid-template-columns: 1fr;
+      }
+      .cancha-panel {
+        position: static;
+        display: grid;
+        grid-template-columns: 140px 1fr;
+      }
+      .cancha-panel-imagen { height: 100%; min-height: 120px; }
+      .horarios-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 580px) {
+      .cancha-panel { grid-template-columns: 1fr; }
+      .cancha-panel-imagen { height: 110px; }
+      .horarios-grid { grid-template-columns: repeat(2, 1fr); }
+      .resultado-resumen { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVEGACIÓN ── -->
+<header class="site-header">
+  <nav class="nav-inner" aria-label="Navegación principal">
+    <a href="I03-catalogo.html" class="nav-brand">
+      <div class="nav-brand-icon">⚽</div>
+      <span class="nav-brand-name">Cancha<span>Ya</span></span>
+    </a>
+
+    <ul class="nav-links" role="list">
+      <li><a href="I03-catalogo.html" class="nav-link active">Canchas</a></li>
+      <li><a href="I07-mis-reservas.html" class="nav-link">Mis reservas</a></li>
+      <li><a href="I20-perfil.html" class="nav-link">Mi perfil</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="nav-user">
+        <div class="nav-avatar" aria-hidden="true">JH</div>
+        <span>José Huaranga</span>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ── CONTENIDO PRINCIPAL ── -->
+<main>
+  <div class="page-container">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Ruta de navegación">
+      <a href="I03-catalogo.html" class="breadcrumb-item">Canchas</a>
+      <span class="breadcrumb-sep" aria-hidden="true">›</span>
+      <span class="breadcrumb-item active" aria-current="page">Disponibilidad</span>
+    </nav>
+
+    <header class="page-header">
+      <h1 class="page-title">Consultar disponibilidad</h1>
+      <p class="page-subtitle">Selecciona una fecha y un horario para verificar si la cancha está disponible.</p>
+    </header>
+
+    <div class="disponibilidad-layout">
+
+      <!-- ── Columna principal ── -->
+      <div class="disponibilidad-main">
+
+        <!-- Formulario de consulta -->
+        <!--
+          En Thymeleaf: <form th:action="@{/disponibilidad}" method="get">
+          Los parámetros idCancha, fecha y horario se envían al controlador
+          que devuelve el resultado de disponibilidad.
+        -->
+        <section class="consulta-card" aria-labelledby="consulta-titulo">
+          <header class="consulta-card-header">
+            <h2 class="consulta-card-title" id="consulta-titulo">Selecciona fecha y horario</h2>
+          </header>
+          <div class="consulta-card-body">
+            <form action="I04-disponibilidad.html" method="get" id="consulta-form">
+
+              <!-- Campo oculto: id de la cancha (lo pasa Thymeleaf desde I03) -->
+              <!-- <input type="hidden" name="idCancha" th:value="${cancha.id}"> -->
+              <input type="hidden" name="idCancha" value="1">
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="fecha">
+                    Fecha <span class="required" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    class="form-input"
+                    type="date"
+                    id="fecha"
+                    name="fecha"
+                    value="2026-09-15"
+                    min="2026-09-11"
+                    required
+                    aria-required="true"
+                    aria-describedby="fecha-hint"
+                  >
+                  <span class="form-hint" id="fecha-hint">
+                    Solo fechas desde hoy en adelante.
+                  </span>
+                </div>
+
+                <div class="form-group" style="align-self: end;">
+                  <button type="submit" class="btn btn-primary btn-full" style="margin-top: 0;">
+                    Consultar disponibilidad
+                  </button>
+                </div>
+              </div>
+
+            </form>
+          </div>
+        </section>
+
+        <!-- Grilla de horarios del día consultado -->
+        <!--
+          En Thymeleaf: th:if="${slots != null}"
+          Cada slot se renderiza con th:each="slot : ${slots}"
+          La clase "ocupado" se agrega con th:classappend="${slot.ocupado} ? 'ocupado'"
+        -->
+        <section class="horarios-section" aria-labelledby="horarios-titulo">
+          <header class="horarios-header">
+            <h2 class="horarios-title" id="horarios-titulo">Horarios del día</h2>
+            <span class="horarios-fecha-label">martes 15 de setiembre de 2026</span>
+          </header>
+
+          <div class="horarios-leyenda" role="list" aria-label="Referencias de estados">
+            <div class="leyenda-item" role="listitem">
+              <span class="leyenda-dot disponible" aria-hidden="true"></span>
+              Disponible
+            </div>
+            <div class="leyenda-item" role="listitem">
+              <span class="leyenda-dot ocupado" aria-hidden="true"></span>
+              Ocupado
+            </div>
+            <div class="leyenda-item" role="listitem">
+              <span class="leyenda-dot seleccionado" aria-hidden="true"></span>
+              Seleccionado
+            </div>
+          </div>
+
+          <!--
+            Formulario de selección de horario.
+            En Thymeleaf: <form th:action="@{/disponibilidad/seleccionar}" method="get">
+          -->
+          <form action="I05-generar-reserva.html" method="get" id="horario-form">
+            <input type="hidden" name="idCancha" value="1">
+            <input type="hidden" name="fecha" value="2026-09-15">
+
+            <div class="horarios-grid" role="group" aria-labelledby="horarios-titulo">
+
+              <!-- 08:00 - disponible -->
+              <div class="horario-slot">
+                <input type="radio" name="horario" id="h0800" value="08:00-09:00" aria-label="08:00 a 09:00, disponible">
+                <label class="horario-slot-label" for="h0800">
+                  <span class="horario-slot-hora">08:00</span>
+                  <span class="horario-slot-estado">Disponible</span>
+                </label>
+              </div>
+
+              <!-- 09:00 - disponible -->
+              <div class="horario-slot">
+                <input type="radio" name="horario" id="h0900" value="09:00-10:00" aria-label="09:00 a 10:00, disponible">
+                <label class="horario-slot-label" for="h0900">
+                  <span class="horario-slot-hora">09:00</span>
+                  <span class="horario-slot-estado">Disponible</span>
+                </label>
+              </div>
+
+              <!-- 10:00 - OCUPADO (regla: no superponer reservas) -->
+              <div class="horario-slot ocupado">
+                <input type="radio" name="horario" id="h1000" value="10:00-11:00" disabled aria-label="10:00 a 11:00, ocupado" aria-disabled="true">
+                <label class="horario-slot-label" for="h1000">
+                  <span class="horario-slot-hora">10:00</span>
+                  <span class="horario-slot-estado">Ocupado</span>
+                </label>
+              </div>
+
+              <!-- 11:00 - OCUPADO -->
+              <div class="horario-slot ocupado">
+                <input type="radio" name="horario" id="h1100" value="11:00-12:00" disabled aria-label="11:00 a 12:00, ocupado" aria-disabled="true">
+                <label class="horario-slot-label" for="h1100">
+                  <span class="horario-slot-hora">11:00</span>
+                  <span class="horario-slot-estado">Ocupado</span>
+                </label>
+              </div>
+
+              <!-- 12:00 - disponible -->
+              <div class="horario-slot">
+                <input type="radio" name="horario" id="h1200" value="12:00-13:00" aria-label="12:00 a 13:00, disponible">
+                <label class="horario-slot-label" for="h1200">
+                  <span class="horario-slot-hora">12:00</span>
+                  <span class="horario-slot-estado">Disponible</span>
+                </label>
+              </div>
+
+              <!-- 13:00 - disponible -->
+              <div class="horario-slot">
+                <input type="radio" name="horario" id="h1300" value="13:00-14:00" aria-label="13:00 a 14:00, disponible">
+                <label class="horario-slot-label" for="h1300">
+                  <span class="horario-slot-hora">13:00</span>
+                  <span class="horario-slot-estado">Disponible</span>
+                </label>
+              </div>
+
+              <!-- 14:00 - disponible -->
+              <div class="horario-slot">
+                <input type="radio" name="horario" id="h1400" value="14:00-15:00" aria-label="14:00 a 15:00, disponible">
+                <label class="horario-slot-label" for="h1400">
+                  <span class="horario-slot-hora">14:00</span>
+                  <span class="horario-slot-estado">Disponible</span>
+                </label>
+              </div>
+
+              <!-- 15:00 - OCUPADO -->
+              <div class="horario-slot ocupado">
+                <input type="radio" name="horario" id="h1500" value="15:00-16:00" disabled aria-label="15:00 a 16:00, ocupado" aria-disabled="true">
+                <label class="horario-slot-label" for="h1500">
+                  <span class="horario-slot-hora">15:00</span>
+                  <span class="horario-slot-estado">Ocupado</span>
+                </label>
+              </div>
+
+              <!-- 16:00 - disponible -->
+              <div class="horario-slot">
+                <input type="radio" name="horario" id="h1600" value="16:00-17:00" aria-label="16:00 a 17:00, disponible">
+                <label class="horario-slot-label" for="h1600">
+                  <span class="horario-slot-hora">16:00</span>
+                  <span class="horario-slot-estado">Disponible</span>
+                </label>
+              </div>
+
+              <!-- 17:00 - disponible -->
+              <div class="horario-slot">
+                <input type="radio" name="horario" id="h1700" value="17:00-18:00" aria-label="17:00 a 18:00, disponible">
+                <label class="horario-slot-label" for="h1700">
+                  <span class="horario-slot-hora">17:00</span>
+                  <span class="horario-slot-estado">Disponible</span>
+                </label>
+              </div>
+
+              <!-- 18:00 - disponible -->
+              <div class="horario-slot">
+                <input type="radio" name="horario" id="h1800" value="18:00-19:00" aria-label="18:00 a 19:00, disponible">
+                <label class="horario-slot-label" for="h1800">
+                  <span class="horario-slot-hora">18:00</span>
+                  <span class="horario-slot-estado">Disponible</span>
+                </label>
+              </div>
+
+              <!-- 19:00 - OCUPADO -->
+              <div class="horario-slot ocupado">
+                <input type="radio" name="horario" id="h1900" value="19:00-20:00" disabled aria-label="19:00 a 20:00, ocupado" aria-disabled="true">
+                <label class="horario-slot-label" for="h1900">
+                  <span class="horario-slot-hora">19:00</span>
+                  <span class="horario-slot-estado">Ocupado</span>
+                </label>
+              </div>
+
+            </div><!-- /.horarios-grid -->
+
+            <!-- Resultado + acción: visible tras seleccionar horario -->
+            <!--
+              Demo estática: este bloque tiene clase "visible".
+              En Thymeleaf: th:if="${horarioSeleccionado != null}"
+            -->
+            <div class="resultado-disponibilidad visible" id="resultado-bloque"
+                 aria-live="polite" aria-atomic="true">
+              <header class="resultado-header">
+                <h3 class="resultado-title">Resultado de disponibilidad</h3>
+              </header>
+              <div class="resultado-body">
+
+                <!-- Estado: disponible -->
+                <!--
+                  En Thymeleaf:
+                  <div th:class="'resultado-estado ' + (${disponible} ? 'disponible' : 'no-disponible')">
+                -->
+                <div class="resultado-estado disponible" role="status">
+                  <span class="resultado-estado-icon" aria-hidden="true">✅</span>
+                  <div class="resultado-estado-texto">
+                    <strong>Disponible</strong>
+                    <span>Este horario está libre para el día seleccionado.</span>
+                  </div>
+                </div>
+
+                <!-- Resumen de la selección -->
+                <div class="resultado-resumen">
+                  <div class="resultado-dato">
+                    <p class="resultado-dato-label">Cancha</p>
+                    <p class="resultado-dato-valor">Cancha Norte</p>
+                  </div>
+                  <div class="resultado-dato">
+                    <p class="resultado-dato-label">Categoría</p>
+                    <p class="resultado-dato-valor">Fútbol</p>
+                  </div>
+                  <div class="resultado-dato">
+                    <p class="resultado-dato-label">Fecha</p>
+                    <p class="resultado-dato-valor">martes 15/09/2026</p>
+                  </div>
+                  <div class="resultado-dato">
+                    <p class="resultado-dato-label">Horario</p>
+                    <p class="resultado-dato-valor">16:00 – 17:00</p>
+                  </div>
+                </div>
+
+                <!--
+                  En Thymeleaf: th:if="${disponible}"
+                  Pasa idCancha, fecha y horario como parámetros al formulario de reserva
+                -->
+                <a href="I05-generar-reserva.html" class="btn btn-primary btn-lg btn-full">
+                  Continuar con la reserva
+                </a>
+
+              </div>
+            </div><!-- /.resultado-disponibilidad -->
+
+          </form>
+        </section>
+
+      </div><!-- /.disponibilidad-main -->
+
+      <!-- ── Panel derecho: datos de la cancha ── -->
+      <!--
+        En Thymeleaf: th:object="${cancha}"
+        Los datos se pueblan desde el modelo pasado por el controlador.
+      -->
+      <aside>
+        <article class="cancha-panel" aria-label="Información de la cancha seleccionada">
+          <div class="cancha-panel-imagen">
+            <span class="cancha-panel-icon" aria-hidden="true">⚽</span>
+            <span class="cancha-panel-tipo">FÚTBOL 11</span>
+          </div>
+          <div class="cancha-panel-body">
+            <p class="cancha-panel-categoria">Fútbol</p>
+            <h2 class="cancha-panel-nombre">Cancha Norte</h2>
+            <p class="cancha-panel-descripcion">
+              Cancha de grass sintético para fútbol 11. Con iluminación LED,
+              vestuarios y estacionamiento incluido.
+            </p>
+            <div class="cancha-panel-precio">
+              <span class="cancha-panel-precio-valor">S/ 80</span>
+              <span class="cancha-panel-precio-unidad">/ hora</span>
+            </div>
+          </div>
+        </article>
+      </aside>
+
+    </div><!-- /.disponibilidad-layout -->
+
+  </div><!-- /.page-container -->
+</main>
+
+<!-- ── PIE DE PÁGINA ── -->
+<footer class="site-footer">
+  <p>CanchaYa — Universidad Continental · Ingeniería Web · Grupo 3 · 2026</p>
+</footer>
+
+</body>
+</html>
