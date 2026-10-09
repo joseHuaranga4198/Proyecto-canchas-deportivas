@@ -1,10 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title><c:choose><c:when test="${not empty cancha.id}">Editar Cancha</c:when><c:otherwise>Nueva Cancha</c:otherwise></c:choose></title>
+    <title><c:choose><c:when test="${not empty cancha.idCancha}">Editar Cancha</c:when><c:otherwise>Nueva Cancha</c:otherwise></c:choose></title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 2rem; }
         .form-card { max-width: 520px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -22,13 +22,13 @@
     <div class="form-card">
         <h2>
             <c:choose>
-                <c:when test="${not empty cancha.id}">Editar Cancha (#${cancha.id})</c:when>
+                <c:when test="${not empty cancha.idCancha}">Editar Cancha (#${cancha.idCancha})</c:when>
                 <c:otherwise>Registrar Nueva Cancha</c:otherwise>
             </c:choose>
         </h2>
 
         <form action="${pageContext.request.contextPath}/canchas/admin/guardar" method="post">
-            <input type="hidden" name="id" value="${cancha.id}">
+            <input type="hidden" name="idCancha" value="${cancha.idCancha}">
 
             <div class="form-group">
                 <label for="nombre">Nombre de la Cancha:</label>
@@ -36,12 +36,13 @@
             </div>
 
             <div class="form-group">
-                <label for="categoria">Categoría / Disciplina:</label>
-                <select id="categoria" name="categoria" required>
-                    <option value="Fútbol 5" ${cancha.categoria == 'Fútbol 5' ? 'selected' : ''}>Fútbol 5</option>
-                    <option value="Fútbol 7" ${cancha.categoria == 'Fútbol 7' ? 'selected' : ''}>Fútbol 7</option>
-                    <option value="Pádel" ${cancha.categoria == 'Pádel' ? 'selected' : ''}>Pádel</option>
-                    <option value="Básquet" ${cancha.categoria == 'Básquet' ? 'selected' : ''}>Básquet</option>
+                <label for="idCategoria">Categoría / Disciplina:</label>
+                <select id="idCategoria" name="idCategoria" required>
+                    <c:forEach var="cat" items="${categorias}">
+                        <option value="${cat.idCategoria}" ${cancha.categoria != null && cancha.categoria.idCategoria == cat.idCategoria ? 'selected' : ''}>
+                            ${cat.nombre}
+                        </option>
+                    </c:forEach>
                 </select>
             </div>
 
@@ -52,15 +53,14 @@
 
             <div class="form-group">
                 <label for="caracteristicas">Características y Equipamiento:</label>
-                <textarea id="caracteristicas" name="caracteristicas" placeholder="Grass sintético, luz artificial, camerinos...">${cancha.caracteristicas}</textarea>
+                <textarea id="caracteristicas" name="caracteristicas" placeholder="Grass sintético, iluminación LED, camerinos...">${cancha.caracteristicas}</textarea>
             </div>
 
             <div class="form-group">
-                <label for="estado">Estado Inicial:</label>
+                <label for="estado">Estado:</label>
                 <select id="estado" name="estado">
-                    <option value="DISPONIBLE" ${cancha.estado == 'DISPONIBLE' ? 'selected' : ''}>DISPONIBLE</option>
-                    <option value="MANTENIMIENTO" ${cancha.estado == 'MANTENIMIENTO' ? 'selected' : ''}>MANTENIMIENTO</option>
-                    <option value="INACTIVO" ${cancha.estado == 'INACTIVO' ? 'selected' : ''}>INACTIVO</option>
+                    <option value="ACTIVA" ${cancha.estado == 'ACTIVA' ? 'selected' : ''}>ACTIVA</option>
+                    <option value="INACTIVA" ${cancha.estado == 'INACTIVA' ? 'selected' : ''}>INACTIVA</option>
                 </select>
             </div>
 

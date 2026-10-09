@@ -94,7 +94,8 @@ public class ReservaRepository implements ReservaDAO {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            // Se restringe la generacion de llaves unicamente a la columna ID_RESERVA
+            PreparedStatement ps = connection.prepareStatement(sql, new String[] { "ID_RESERVA" });
             ps.setLong(1, reserva.getUsuario().getIdUsuario());
             ps.setLong(2, reserva.getCancha().getIdCancha());
             ps.setDate(3, java.sql.Date.valueOf(reserva.getFecha()));
@@ -105,7 +106,14 @@ public class ReservaRepository implements ReservaDAO {
             return ps;
         }, keyHolder);
 
-        return keyHolder.getKey() != null ? keyHolder.getKey().longValue() : null;
+        // Extraccion segura soportando casos con multiples columnas autogeneradas
+        if (keyHolder.getKeys() != null && keyHolder.getKeys().containsKey("ID_RESERVA")) {
+            return ((Number) keyHolder.getKeys().get("ID_RESERVA")).longValue();
+        } else if (keyHolder.getKey() != null) {
+            return keyHolder.getKey().longValue();
+        }
+
+        return null;
     }
 
     @Override
