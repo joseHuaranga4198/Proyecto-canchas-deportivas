@@ -17,15 +17,15 @@
     <div class="card-confirmacion">
         <div class="icono">✓</div>
         <h2>¡Reserva Confirmada!</h2>
-        <p>Tu turno ha sido registrado en el sistema correctamente.</p>
+        <p>Tu turno y comprobante de pago han sido registrados exitosamente.</p>
 
         <div class="detalles">
-            <p><strong>N° de Reserva:</strong> #${reserva.id}</p>
-            <p><strong>Cliente:</strong> ${reserva.clienteNombre}</p>
-            <p><strong>Cancha:</strong> ${reserva.canchaNombre}</p>
+            <p><strong>N° de Turno:</strong> #${reserva.idReserva}</p>
+            <p><strong>Cliente:</strong> ${reserva.usuario.nombres} ${reserva.usuario.apellidos}</p>
+            <p><strong>Cancha:</strong> ${reserva.cancha.nombre}</p>
             <p><strong>Fecha:</strong> ${reserva.fecha}</p>
             <p><strong>Horario:</strong> ${reserva.horaInicio} a ${reserva.horaFin}</p>
-            <p><strong>Importe Calculado:</strong> S/ ${reserva.montoTotal}</p>
+            <p><strong>Importe Pagado:</strong> S/ ${reserva.importe}</p>
             <p><strong>Estado:</strong> ${reserva.estado}</p>
         </div>
 

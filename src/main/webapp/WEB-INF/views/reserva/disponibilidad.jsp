@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -50,8 +50,8 @@
                     <label for="canchaId">Seleccionar Cancha:</label>
                     <select id="canchaId" name="canchaId" required>
                         <c:forEach var="c" items="${canchas}">
-                            <option value="${c.id}" ${c.id == canchaSeleccionada.id ? 'selected' : ''}>
-                                ${c.nombre} (${c.categoria}) - S/ ${c.precioHora}/h
+                            <option value="${c.idCancha}" ${c.idCancha == canchaSeleccionada.idCancha ? 'selected' : ''}>
+                                ${c.nombre} (${c.categoria.nombre}) - S/ ${c.precioHora}/h
                             </option>
                         </c:forEach>
                     </select>
@@ -71,9 +71,9 @@
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <h3>${canchaSeleccionada.nombre}</h3>
-                        <p><strong>Disciplina:</strong> ${canchaSeleccionada.categoria} | <strong>Tarifa:</strong> S/ ${canchaSeleccionada.precioHora} por hora</p>
+                        <p><strong>Disciplina:</strong> ${canchaSeleccionada.categoria.nombre} | <strong>Tarifa:</strong> S/ ${canchaSeleccionada.precioHora} por hora</p>
                     </div>
-                    <a href="${pageContext.request.contextPath}/reservas/nueva?canchaId=${canchaSeleccionada.id}" class="btn-reservar-ahora">+ Reservar Turno</a>
+                    <a href="${pageContext.request.contextPath}/reservas/nueva?canchaId=${canchaSeleccionada.idCancha}" class="btn-reservar-ahora">+ Reservar Turno</a>
                 </div>
             </div>
 
@@ -99,7 +99,7 @@
                             <tr>
                                 <td colspan="2" style="text-align: center; color: #16a34a; padding: 1.5rem;">
                                     <span class="badge-disponible">DISPONIBLE TODO EL DÍA</span>
-                                    <p style="margin: 0.5rem 0 0 0; color: #64748b;">No hay reservas confirmadas para esta fecha.</p>
+                                    <p style="margin: 0.5rem 0 0 0; color: #64748b;">No hay reservas registradas para esta fecha.</p>
                                 </td>
                             </tr>
                         </c:otherwise>

@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -68,12 +68,12 @@
                     <tbody>
                         <c:forEach var="cat" items="${categorias}">
                             <tr>
-                                <td>#${cat.id}</td>
+                                <td>#${cat.idCategoria}</td>
                                 <td><strong>${cat.nombre}</strong></td>
                                 <td>${cat.descripcion}</td>
                                 <td><span class="badge">${cat.estado}</span></td>
                                 <td>
-                                    <form action="${pageContext.request.contextPath}/admin/categorias/eliminar/${cat.id}" method="post" style="display:inline;">
+                                    <form action="${pageContext.request.contextPath}/admin/categorias/eliminar/${cat.idCategoria}" method="post" style="display:inline;">
                                         <button type="submit" class="btn-del" onclick="return confirm('¿Eliminar categoría?')">Eliminar</button>
                                     </form>
                                 </td>

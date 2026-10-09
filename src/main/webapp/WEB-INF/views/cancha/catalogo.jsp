@@ -1,72 +1,78 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Catálogo de Canchas Deportivas</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/menu.css">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; color: #1e293b; }
-        .navbar { background: #0f172a; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .navbar h2 { margin: 0; font-size: 1.2rem; }
-        .nav-links a { color: #cbd5e1; text-decoration: none; margin-left: 1.2rem; font-size: 0.9rem; }
-        .nav-links a:hover { color: white; }
-        .container { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
-        .header-title { margin-bottom: 2rem; }
-        .header-title h1 { margin: 0 0 0.5rem 0; font-size: 1.8rem; }
-        .header-title p { margin: 0; color: #64748b; }
-        .grid-canchas { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
-        .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; }
-        .badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #e0f2fe; color: #0284c7; width: fit-content; margin-bottom: 0.75rem; }
-        .card h3 { margin: 0 0 0.5rem 0; font-size: 1.25rem; color: #1e293b; }
-        .card p { margin: 0 0 1rem 0; color: #64748b; font-size: 0.9rem; line-height: 1.4; flex-grow: 1; }
-        .precio-box { font-size: 1.3rem; font-weight: bold; color: #16a34a; margin-bottom: 1.2rem; }
-        .precio-box span { font-size: 0.85rem; color: #64748b; font-weight: normal; }
-        .btn-group { display: flex; gap: 0.5rem; }
-        .btn { text-align: center; text-decoration: none; padding: 0.6rem 1rem; border-radius: 4px; font-weight: bold; font-size: 0.9rem; flex: 1; }
-        .btn-primary { background: #2563eb; color: white; }
-        .btn-primary:hover { background: #1d4ed8; }
-        .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
-        .btn-secondary:hover { background: #e2e8f0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding-bottom: 3rem; }
+        .navbar { background: #1e293b; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; color: #fff; }
+        .navbar a { color: #f8fafc; text-decoration: none; margin-left: 1rem; font-weight: 500; font-size: 0.95rem; }
+        .navbar a:hover { color: #38bdf8; }
+        .catalogo-container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+        .grid-canchas { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .card-cancha { border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.4rem; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; }
+        .card-cancha h3 { margin: 0.5rem 0; color: #0f172a; font-size: 1.25rem; }
+        .badge { align-self: flex-start; display: inline-block; padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; background: #e0f2fe; color: #0369a1; text-transform: uppercase; }
+        .desc { color: #64748b; font-size: 0.95rem; line-height: 1.4; min-height: 2.8rem; }
+        .precio { font-size: 1.35rem; font-weight: 700; color: #16a34a; margin: 0.8rem 0; }
+        .btn-group { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+        .btn-reservar { flex: 1; text-align: center; text-decoration: none; background: #2563eb; color: #fff; padding: 0.65rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem; }
+        .btn-reservar:hover { background: #1d4ed8; }
+        .btn-horarios { text-align: center; text-decoration: none; background: #f1f5f9; color: #334155; padding: 0.65rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem; border: 1px solid #cbd5e1; }
+        .btn-horarios:hover { background: #e2e8f0; }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <h2>Reserva de Canchas Deportivas</h2>
-        <div class="nav-links">
-            <a href="${pageContext.request.contextPath}/canchas/catalogo">Catálogo</a>
-            <a href="${pageContext.request.contextPath}/reservas/disponibilidad">Disponibilidad</a>
-            <a href="${pageContext.request.contextPath}/reservas/mis-reservas">Mis Reservas</a>
-            <a href="${pageContext.request.contextPath}/usuario/login">Iniciar Sesión</a>
-        </div>
-    </div>
 
-    <div class="container">
-        <div class="header-title">
-            <h1>Catálogo de Canchas</h1>
-            <p>Consulta las canchas disponibles, sus características y selecciona el horario de tu preferencia.</p>
-        </div>
+    <header class="navbar">
+        <div style="font-weight: bold; font-size: 1.2rem;">⚽ Reserva de Canchas</div>
+        <nav>
+            <a href="${pageContext.request.contextPath}/canchas/catalogo">Catálogo</a>
+            <a href="${pageContext.request.contextPath}/reservas/disponibilidad">Ver Horarios</a>
+            <c:choose>
+                <c:when test="${not empty sessionScope.usuarioLogueado}">
+                    <c:if test="${sessionScope.usuarioLogueado.rol eq 'ADMINISTRADOR'}">
+                        <a href="${pageContext.request.contextPath}/admin/panel" style="color: #facc15;">Panel Admin</a>
+                    </c:if>
+                    <c:if test="${sessionScope.usuarioLogueado.rol eq 'CLIENTE'}">
+                        <a href="${pageContext.request.contextPath}/reservas/mis-reservas">Mis Reservas</a>
+                    </c:if>
+                    <a href="${pageContext.request.contextPath}/usuario/logout" style="color: #ef4444;">Salir (${sessionScope.usuarioLogueado.nombres})</a>
+                </c:when>
+                <c:otherwise>
+                    <a href="${pageContext.request.contextPath}/usuario/login">Iniciar Sesión</a>
+                    <a href="${pageContext.request.contextPath}/usuario/registro">Registrarse</a>
+                </c:otherwise>
+            </c:choose>
+        </nav>
+    </header>
+
+    <main class="catalogo-container">
+        <h2>Catálogo de Canchas Deportivas</h2>
+        <p style="color: #475569;">Explora los espacios disponibles, consulta la disponibilidad en tiempo real y reserva tu turno al instante.</p>
 
         <div class="grid-canchas">
             <c:forEach var="c" items="${canchas}">
-                <div class="card">
+                <article class="card-cancha">
                     <div>
-                        <span class="badge">${c.categoria}</span>
+                        <span class="badge">${c.categoria.nombre}</span>
                         <h3>${c.nombre}</h3>
-                        <p>${c.caracteristicas}</p>
+                        <p class="desc">${c.caracteristicas}</p>
                     </div>
                     <div>
-                        <div class="precio-box">
-                            S/ ${c.precioHora} <span>/ hora</span>
-                        </div>
+                        <div class="precio">S/ ${c.precioHora} <span style="font-size: 0.85rem; color: #64748b; font-weight: normal;">/ hora</span></div>
                         <div class="btn-group">
-                            <a href="${pageContext.request.contextPath}/reservas/disponibilidad?canchaId=${c.id}" class="btn btn-secondary">Disponibilidad</a>
-                            <a href="${pageContext.request.contextPath}/reservas/nueva?canchaId=${c.id}" class="btn btn-primary">Reservar</a>
+                            <a href="${pageContext.request.contextPath}/reservas/disponibilidad?canchaId=${c.idCancha}" class="btn-horarios">Horarios</a>
+                            <a href="${pageContext.request.contextPath}/reservas/nueva?canchaId=${c.idCancha}" class="btn-reservar">Reservar Turno</a>
                         </div>
                     </div>
-                </div>
+                </article>
             </c:forEach>
         </div>
-    </div>
+    </main>
+
 </body>
 </html>

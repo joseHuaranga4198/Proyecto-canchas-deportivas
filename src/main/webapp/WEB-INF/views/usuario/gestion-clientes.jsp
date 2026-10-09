@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -30,6 +30,7 @@
             <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Documento</th>
                     <th>Nombre Completo</th>
                     <th>Correo</th>
                     <th>Teléfono</th>
@@ -40,8 +41,9 @@
             <tbody>
                 <c:forEach var="c" items="${clientes}">
                     <tr>
-                        <td>#${c.id}</td>
-                        <td>${c.nombre} ${c.apellidos}</td>
+                        <td>#${c.idUsuario}</td>
+                        <td>${c.documento}</td>
+                        <td>${c.nombres} ${c.apellidos}</td>
                         <td>${c.correo}</td>
                         <td>${c.telefono}</td>
                         <td>
@@ -55,7 +57,7 @@
                             </c:choose>
                         </td>
                         <td>
-                            <form action="${pageContext.request.contextPath}/usuario/admin/bloquear/${c.id}" method="post" style="display:inline;">
+                            <form action="${pageContext.request.contextPath}/usuario/admin/bloquear/${c.idUsuario}" method="post" style="display:inline;">
                                 <c:choose>
                                     <c:when test="${c.estado == 'ACTIVO'}">
                                         <button type="submit" class="btn-bloquear">Bloquear</button>

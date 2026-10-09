@@ -26,11 +26,20 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    public String procesarLogin(@RequestParam("correo") String correo,
-                                @RequestParam("contrasena") String contrasena,
+    public String procesarLogin(@RequestParam(name = "correo", required = false) String correo,
+                                @RequestParam(name = "contrasena", required = false) String contrasena,
+                                @RequestParam(name = "password", required = false) String password,
                                 HttpSession session,
                                 Model model) {
-        Usuario user = usuarioService.autenticar(correo, contrasena);
+
+        String passFinal = (contrasena != null && !contrasena.isBlank()) ? contrasena : password;
+
+        if (correo == null || passFinal == null || correo.isBlank() || passFinal.isBlank()) {
+            model.addAttribute("error", "Por favor ingrese su correo y contraseña.");
+            return "usuario/login";
+        }
+
+        Usuario user = usuarioService.autenticar(correo.trim(), passFinal.trim());
 
         if (user == null) {
             model.addAttribute("error", "Credenciales incorrectas.");
