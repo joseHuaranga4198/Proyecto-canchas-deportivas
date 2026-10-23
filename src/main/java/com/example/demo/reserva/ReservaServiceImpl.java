@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.math.RoundingMode;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.cancha.Cancha;
@@ -51,58 +52,19 @@ public class ReservaServiceImpl implements ReservaService {
         if (c == null) return BigDecimal.ZERO;
 
         long minutos = Duration.between(horaInicio, horaFin).toMinutes();
-        double horas = (double) minutos / 60.0;
-        return c.getPrecioHora().multiply(BigDecimal.valueOf(horas));
+        return c.getPrecioHora().multiply(BigDecimal.valueOf(minutos))
+                .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
     }
 
     @Override
     public Reserva registrarReserva(Long idUsuario, Long idCancha, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin) {
-        Usuario u = usuarioDAO.obtenerPorId(idUsuario);
-        Cancha c = canchaDAO.obtenerPorId(idCancha);
-
-        // RN02: Validación cliente bloqueado
-        if (u == null || "BLOQUEADO".equalsIgnoreCase(u.getEstado())) {
-            throw new IllegalStateException("El cliente está bloqueado o no existe.");
-        }
-
-        // RN03: Validación cancha activa
-        if (c == null || !"ACTIVA".equalsIgnoreCase(c.getEstado())) {
-            throw new IllegalStateException("La cancha se encuentra inactiva.");
-        }
-
-        // RN01: Validación exclusividad horaria
-        if (!estaDisponible(idCancha, fecha, horaInicio, horaFin)) {
-            throw new IllegalStateException("El horario solicitado ya se encuentra ocupado.");
-        }
-
-        // RN04: Cálculo exacto
-        BigDecimal total = calcularMonto(idCancha, horaInicio, horaFin);
-
-        Reserva nueva = new Reserva();
-        nueva.setUsuario(u);
-        nueva.setCancha(c);
-        nueva.setFecha(fecha);
-        nueva.setHoraInicio(horaInicio);
-        nueva.setHoraFin(horaFin);
-        nueva.setImporte(total);
-        nueva.setEstado("PENDIENTE"); // RN05: Nace pendiente de pago
-
-        Long idGenerado = reservaDAO.guardar(nueva);
-        nueva.setIdReserva(idGenerado);
-        return nueva;
+        throw new UnsupportedOperationException(
+                "No se guardan reservas antes del pago; usa el flujo de borrador y pago de ReservaController.");
     }
 
     @Override
     public boolean confirmarPago(Long idReserva) {
-        Reserva r = reservaDAO.obtenerPorId(idReserva);
-        if (r == null || !"PENDIENTE".equalsIgnoreCase(r.getEstado())) {
-            return false;
-        }
-
-        // RN05: Inserta registro en la tabla pago y confirma
-        reservaDAO.registrarPago(idReserva, r.getImporte());
-        reservaDAO.cambiarEstado(idReserva, "CONFIRMADA");
-        return true;
+        return false;
     }
 
     @Override

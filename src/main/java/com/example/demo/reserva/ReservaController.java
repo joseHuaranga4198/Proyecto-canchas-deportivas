@@ -23,10 +23,12 @@ public class ReservaController {
 
     private final ReservaService reservaService;
     private final CanchaService canchaService;
+    private final ReservaF1316Service flujoPagoService;
 
-    public ReservaController(ReservaService reservaService, CanchaService canchaService) {
+    public ReservaController(ReservaService reservaService, CanchaService canchaService, ReservaF1316Service flujoPagoService) {
         this.reservaService = reservaService;
         this.canchaService = canchaService;
+        this.flujoPagoService = flujoPagoService;
     }
 
     @GetMapping("/disponibilidad")
@@ -93,8 +95,9 @@ public class ReservaController {
         }
 
         try {
-            Reserva nueva = reservaService.registrarReserva(user.getIdUsuario(), canchaId, fecha, horaInicio, horaFin);
-            return "redirect:/reservas/pago/" + nueva.getIdReserva();
+            if (fecha.isBefore(LocalDate.now())) throw new IllegalArgumentException("La fecha no puede estar en el pasado.");
+            session.setAttribute("reservaBorrador", new ReservaBorrador(user.getIdUsuario(), canchaId, fecha, horaInicio, horaFin));
+            return "redirect:/reservas/pago";
         } catch (Exception ex) {
             model.addAttribute("error", ex.getMessage());
             model.addAttribute("cancha", cancha);
@@ -103,39 +106,60 @@ public class ReservaController {
         }
     }
 
-    @GetMapping("/pago/{id}")
-    public String verPago(@PathVariable("id") Long id, Model model) {
-        Reserva r = reservaService.obtenerPorId(id);
-        if (r == null) return "redirect:/canchas/catalogo";
-        model.addAttribute("reserva", r);
+    @GetMapping("/pago")
+    public String verPago(HttpSession session, Model model) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        ReservaBorrador borrador = (ReservaBorrador) session.getAttribute("reservaBorrador");
+        if (usuario == null) return "redirect:/usuario/login";
+        if (borrador == null || !borrador.getIdUsuario().equals(usuario.getIdUsuario())) return "redirect:/canchas/catalogo";
+        Cancha cancha = canchaService.obtenerPorId(borrador.getIdCancha());
+        Reserva resumen = new Reserva();
+        resumen.setCancha(cancha);
+        resumen.setFecha(borrador.getFecha());
+        resumen.setHoraInicio(borrador.getHoraInicio());
+        resumen.setHoraFin(borrador.getHoraFin());
+        resumen.setImporte(reservaService.calcularMonto(borrador.getIdCancha(), borrador.getHoraInicio(), borrador.getHoraFin()));
+        model.addAttribute("reserva", resumen);
         return "reserva/pago";
     }
 
-    @PostMapping("/pago/procesar/{id}")
-    public String pagar(@PathVariable("id") Long id) {
-        reservaService.confirmarPago(id);
-        return "redirect:/reservas/confirmacion/" + id;
+    @PostMapping("/pago/procesar")
+    public String pagar(HttpSession session, Model model) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        ReservaBorrador borrador = (ReservaBorrador) session.getAttribute("reservaBorrador");
+        if (usuario == null) return "redirect:/usuario/login";
+        if (borrador == null || !borrador.getIdUsuario().equals(usuario.getIdUsuario())) return "redirect:/canchas/catalogo";
+        try {
+            Reserva reserva = flujoPagoService.registrarReservaPagada(usuario.getIdUsuario(), borrador.getIdCancha(),
+                    borrador.getFecha(), borrador.getHoraInicio(), borrador.getHoraFin());
+            session.removeAttribute("reservaBorrador");
+            return "redirect:/reservas/confirmacion/" + reserva.getIdReserva();
+        } catch (RuntimeException ex) {
+            model.addAttribute("error", ex.getMessage());
+            Cancha cancha = canchaService.obtenerPorId(borrador.getIdCancha());
+            Reserva resumen = new Reserva();
+            resumen.setCancha(cancha);
+            resumen.setFecha(borrador.getFecha());
+            resumen.setHoraInicio(borrador.getHoraInicio());
+            resumen.setHoraFin(borrador.getHoraFin());
+            resumen.setImporte(reservaService.calcularMonto(borrador.getIdCancha(), borrador.getHoraInicio(), borrador.getHoraFin()));
+            model.addAttribute("reserva", resumen);
+            return "reserva/pago";
+        }
     }
 
     @GetMapping("/confirmacion/{id}")
     public String confirmacion(@PathVariable("id") Long id, Model model) {
-        Reserva r = reservaService.obtenerPorId(id);
-        model.addAttribute("reserva", r);
-        return "reserva/confirmacion";
+        return "redirect:/f1316/reservas/" + id;
     }
 
     @GetMapping("/mis-reservas")
     public String misReservas(HttpSession session, Model model) {
-        Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
-        if (user == null) return "redirect:/usuario/login";
-
-        model.addAttribute("reservas", reservaService.listarPorUsuario(user.getIdUsuario()));
-        return "reserva/mis-reservas";
+        return "redirect:/f1316/reservas";
     }
 
     @PostMapping("/cancelar/{id}")
     public String cancelar(@PathVariable("id") Long id) {
-        reservaService.cancelarReserva(id);
-        return "redirect:/reservas/mis-reservas";
+        return "redirect:/f1316/reservas/" + id;
     }
 }
