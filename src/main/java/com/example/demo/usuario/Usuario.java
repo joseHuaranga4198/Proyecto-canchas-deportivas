@@ -1,13 +1,30 @@
 package com.example.demo.usuario;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "usuario")
 public class Usuario {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_usuario")
     private Long idUsuario;
+    @Column(nullable = false)
     private String nombres;
+    @Column(nullable = false)
     private String apellidos;
+    @Column(nullable = false, unique = true)
     private String documento;
     private String telefono;
+    @Column(nullable = false, unique = true)
     private String correo;
+    @Column(name = "contrasena", nullable = false)
     private String contrasena;
     private String rol;    // "CLIENTE", "ADMINISTRADOR"
     private String estado; // "ACTIVO", "BLOQUEADO"

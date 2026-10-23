@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reservas | Administración CanchaYa</title>
+  <link rel="stylesheet" th:href="@{/css/f1316.css}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" th:href="@{/admin/panel}">⚽ CanchaYa <span class="brand-tag">ADMIN</span></a>
+  <nav aria-label="Navegación administrativa">
+    <a th:href="@{/admin/panel}">Panel</a>
+    <a th:href="@{/canchas/admin}">Canchas</a>
+    <a class="active" th:href="@{/f1316/admin/reservas}">Reservas</a>
+    <a th:href="@{/usuario/logout}">Cerrar sesión</a>
+  </nav>
+</header>
+<main class="container">
+  <div class="page-heading"><div><p class="eyebrow">ADMINISTRACIÓN</p><h1>Consulta de reservas</h1>
+    <p class="muted">Filtra el historial para localizar reservas y revisar sus estados.</p></div></div>
+  <p class="notice success" role="status" th:if="${mensaje != null}" th:text="${mensaje}"></p>
+  <p class="notice error" role="alert" th:if="${error != null}" th:text="${error}"></p>
+
+  <form class="filter-grid" method="get" th:action="@{/f1316/admin/reservas}">
+    <div class="field"><label for="idReserva">Código</label><input id="idReserva" name="idReserva" type="text" th:value="${filtros.idReserva}" placeholder="Ej. 104"></div>
+    <div class="field"><label for="cliente">Cliente</label><input id="cliente" name="cliente" type="text" th:value="${filtros.cliente}" placeholder="Nombre o correo"></div>
+    <div class="field"><label for="cancha">Cancha</label><input id="cancha" name="cancha" type="text" th:value="${filtros.cancha}" placeholder="Nombre de cancha"></div>
+    <div class="field"><label for="estado">Estado</label>
+      <select id="estado" name="estado"><option value="" th:selected="${filtros.estado == null or filtros.estado == ''}">Todos</option>
+        <option value="CONFIRMADA" th:selected="${filtros.estado == 'CONFIRMADA'}">Confirmada</option>
+        <option value="CANCELADA" th:selected="${filtros.estado == 'CANCELADA'}">Cancelada</option></select></div>
+    <div class="field"><label for="fechaDesde">Fecha desde</label><input id="fechaDesde" name="fechaDesde" type="date" th:value="${filtros.fechaDesde}"></div>
+    <div class="field"><label for="fechaHasta">Fecha hasta</label><input id="fechaHasta" name="fechaHasta" type="date" th:value="${filtros.fechaHasta}"></div>
+    <div class="filter-actions"><button class="button primary" type="submit">Filtrar reservas</button><a class="button quiet" th:href="@{/f1316/admin/reservas}">Limpiar filtros</a></div>
+  </form>
+
+  <section class="panel" aria-labelledby="table-title">
+    <div class="panel-heading"><h2 id="table-title">Resultados</h2><span class="muted" th:text="|${#lists.size(reservas)} reserva(s)|">0 reservas</span></div>
+    <div class="table-scroll" th:if="${!#lists.isEmpty(reservas)}"><table>
+      <thead><tr><th>Código</th><th>Cliente</th><th>Cancha</th><th>Fecha</th><th>Horario</th><th>Importe</th><th>Estado</th></tr></thead>
+      <tbody><tr th:each="reserva : ${reservas}">
+        <td th:text="|#${reserva.idReserva}|">#1</td>
+        <td><span th:text="|${reserva.usuario.nombres} ${reserva.usuario.apellidos}|">Cliente</span><small class="subtext" th:text="${reserva.usuario.correo}">correo</small></td>
+        <td th:text="${reserva.cancha.nombre}">Cancha</td>
+        <td th:text="${#temporals.format(reserva.fecha, 'dd/MM/yyyy')}">01/01/2026</td>
+        <td th:text="|${#temporals.format(reserva.horaInicio, 'HH:mm')} – ${#temporals.format(reserva.horaFin, 'HH:mm')}|">10:00 – 11:00</td>
+        <td th:text="|S/ ${#numbers.formatDecimal(reserva.importe, 1, 'COMMA', 2, 'POINT')}|">S/ 0.00</td>
+        <td><span class="badge" th:classappend="${#strings.toUpperCase(reserva.estado) == 'CANCELADA'} ? ' cancelled' : ' confirmed'" th:text="${reserva.estado}">Confirmada</span></td>
+      </tr></tbody>
+    </table></div>
+    <div class="empty" th:if="${#lists.isEmpty(reservas)}"><h3>Sin resultados</h3><p>Prueba con otros valores de filtro.</p></div>
+  </section>
+</main>
+<footer>CanchaYa · Administración</footer>
+</body>
+</html>

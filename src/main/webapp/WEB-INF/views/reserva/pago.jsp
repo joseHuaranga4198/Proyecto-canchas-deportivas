@@ -20,7 +20,8 @@
 
 <div class="checkout-box">
     <h2>Confirmación de Pago</h2>
-    <p style="color: #64748b; font-size: 0.9rem;">Tu turno se encuentra temporalmente retenido como <strong>${reserva.estado}</strong>.</p>
+    <p style="color: #64748b; font-size: 0.9rem;">Este horario es un borrador y todavía no existe una reserva. El botón registra un pago simulado exitoso.</p>
+    <c:if test="${not empty error}"><p style="color:#b91c1c;">${error}</p></c:if>
 
     <div class="resumen">
         <div class="item-row"><span>Cancha:</span><strong>${reserva.cancha.nombre}</strong></div>
@@ -29,7 +30,7 @@
         <div class="total-row"><span>Total a Pagar:</span><span>S/ ${reserva.importe}</span></div>
     </div>
 
-    <form action="${pageContext.request.contextPath}/reservas/pago/procesar/${reserva.idReserva}" method="post">
+    <form action="${pageContext.request.contextPath}/reservas/pago/procesar" method="post">
         <button type="submit" class="btn-pagar">Simular Pago Exitoso</button>
     </form>
 </div>

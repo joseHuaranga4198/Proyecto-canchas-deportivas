@@ -49,9 +49,7 @@ public class AdminController {
         if (!tienePermisoAdmin(session)) {
             return "redirect:/usuario/login";
         }
-
-        model.addAttribute("reservas", reservaService.listarTodas());
-        return "admin/gestion-reservas";
+        return "redirect:/f1316/admin/reservas";
     }
 
     @PostMapping("/reservas/cancelar/{id}")

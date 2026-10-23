@@ -34,12 +34,9 @@ VALUES (2, 'Cancha Monumental 7', 'Medidas reglamentarias y vestuarios', 80.00, 
 INSERT INTO cancha (id_categoria, nombre, caracteristicas, precio_hora, estado)
 VALUES (3, 'Cancha Pádel Central', 'Vidrio templado y césped azul texturado', 60.00, 'ACTIVA');
 
--- 4. Reservas iniciales de demostración
+-- 4. Reservas de demostración (solo se insertan reservas con pago registrado)
 INSERT INTO reserva (id_usuario, id_cancha, fecha, hora_inicio, hora_fin, importe, estado)
 VALUES (2, 1, CURRENT_DATE(), '18:00:00', '19:00:00', 50.00, 'CONFIRMADA');
-
-INSERT INTO reserva (id_usuario, id_cancha, fecha, hora_inicio, hora_fin, importe, estado)
-VALUES (3, 2, CURRENT_DATE(), '20:00:00', '21:00:00', 40.00, 'PENDIENTE');
 
 -- 5. Pagos iniciales
 INSERT INTO pago (id_reserva, importe, estado)
