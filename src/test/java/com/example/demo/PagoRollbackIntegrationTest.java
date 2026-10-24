@@ -2,7 +2,6 @@ package com.example.demo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 
@@ -23,19 +22,18 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.example.demo.reserva.Pago;
-import com.example.demo.reserva.PagoJpaRepository;
+import com.example.demo.reserva.ReservaDAO;
 import com.example.demo.reserva.ReservaF1316Service;
 
 @SpringBootTest
 class PagoRollbackIntegrationTest {
     @Autowired private ReservaF1316Service service;
     @Autowired private JdbcTemplate jdbc;
-    @SpyBean private PagoJpaRepository pagos;
+    @SpyBean private ReservaDAO reservaDao;
 
     @AfterEach
     void limpiarEspia() {
-        reset(pagos);
+        reset(reservaDao);
     }
 
     @Test
@@ -43,7 +41,8 @@ class PagoRollbackIntegrationTest {
         Integer reservasAntes = jdbc.queryForObject("select count(*) from reserva", Integer.class);
         Integer pagosAntes = jdbc.queryForObject("select count(*) from pago", Integer.class);
         doThrow(new DataIntegrityViolationException("Fallo controlado del pago"))
-                .when(pagos).saveAndFlush(any(Pago.class));
+                .when(reservaDao).registrarPago(org.mockito.ArgumentMatchers.anyLong(),
+                        org.mockito.ArgumentMatchers.any(java.math.BigDecimal.class));
 
         assertThatThrownBy(() -> service.registrarReservaPagada(2L, 1L,
                 LocalDate.of(2030, 3, 3), LocalTime.NOON, LocalTime.of(13, 0)))

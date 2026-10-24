@@ -51,16 +51,6 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-thymeleaf</artifactId>
-		</dependency>
-
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -74,13 +64,6 @@
             <version>14.0.0</version>
             <classifier>jakarta</classifier>
         </dependency>
-
-		<dependency>
-	 		<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<!-- Puedes usar la última versión disponible -->
-		</dependency>
-
 
 		<!-- Spring Boot Starter JDBC (JdbcTemplate nativo de la clase del profesor) -->
 		<dependency>
