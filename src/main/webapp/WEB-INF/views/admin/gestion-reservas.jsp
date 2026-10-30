@@ -28,12 +28,16 @@
     <header class="navbar">
         <div style="font-weight: bold; font-size: 1.2rem;">⚙️ Administración de Canchas</div>
         <nav>
-            <a href="${pageContext.request.contextPath}/admin/panel">Panel</a>
-            <a href="${pageContext.request.contextPath}/canchas/admin">Canchas</a>
-            <a href="${pageContext.request.contextPath}/admin/categorias">Categorías</a>
-            <a href="${pageContext.request.contextPath}/admin/reservas" style="color: #38bdf8;">Reservas</a>
-            <a href="${pageContext.request.contextPath}/usuario/admin/lista">Clientes</a>
-            <a href="${pageContext.request.contextPath}/usuario/logout" style="color: #f87171;">Cerrar Sesión</a>
+            <a href="<c:url value='/'/>">Inicio</a>
+            <a href="<c:url value='/publicidad'/>">Publicidad</a>
+            <a href="<c:url value='/contacto'/>">Contacto</a>
+            <a href="<c:url value='/admin/panel'/>">Panel</a>
+            <a href="<c:url value='/canchas/admin'/>">Canchas</a>
+            <a href="<c:url value='/admin/categorias'/>">Categorías</a>
+            <a href="<c:url value='/admin/reservas'/>" style="color: #38bdf8;">Reservas</a>
+            <a href="<c:url value='/usuario/admin/lista'/>">Clientes</a>
+            <a href="<c:url value='/usuario/logout'/>" style="color: #f87171;">Cerrar Sesión</a>
+            <a href="${pageContext.request.contextPath}/usuario/login" target="_blank" rel="noopener">Abrir otra sesión</a>
         </nav>
     </header>
 
@@ -71,8 +75,8 @@
                             </td>
                             <td>
                                 <c:if test="${r.estado ne 'CANCELADA'}">
-                                    <form action="${pageContext.request.contextPath}/admin/reservas/cancelar/${r.idReserva}" method="post" style="display:inline;">
-                                        <button type="submit" class="btn-cancelar" onclick="return confirm('¿Desea cancelar esta reserva?');">Cancelar</button>
+                                    <form action="<c:url value='/admin/reservas/cancelar/${r.idReserva}'/>" method="post" style="display:inline;">
+                                        <button type="submit" class="btn-cancelar">Cancelar</button>
                                     </form>
                                 </c:if>
                             </td>

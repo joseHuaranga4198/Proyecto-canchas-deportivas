@@ -33,7 +33,7 @@
         <div class="alert-error">${error}</div>
     </c:if>
 
-    <form action="${pageContext.request.contextPath}/reservas/guardar" method="post">
+    <form action="<c:url value='/reservas/guardar'/>" method="post">
         <input type="hidden" name="canchaId" value="${cancha.idCancha}">
 
         <div class="campo">
@@ -84,7 +84,7 @@
         </div>
 
         <button type="submit" class="btn-confirmar">Continuar al Pago</button>
-        <a href="${pageContext.request.contextPath}/canchas/catalogo" class="btn-cancelar">Cancelar y regresar</a>
+        <a href="<c:url value='/canchas/catalogo'/>" class="btn-cancelar">Cancelar y regresar</a>
     </form>
 </div>
 

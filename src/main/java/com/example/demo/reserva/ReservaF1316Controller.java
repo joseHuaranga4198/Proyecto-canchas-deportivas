@@ -1,6 +1,8 @@
 package com.example.demo.reserva;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -29,7 +31,13 @@ public class ReservaF1316Controller {
     public String misReservas(@RequestParam(required = false) String estado, HttpSession session, Model model) {
         Usuario usuario = usuarioCliente(session);
         if (usuario == null) return "redirect:/usuario/login";
-        model.addAttribute("reservas", service.listarCliente(usuario.getIdUsuario(), estado));
+        java.util.List<Reserva> reservas = service.listarCliente(usuario.getIdUsuario(), estado);
+        Set<Long> cancelables = new HashSet<>();
+        for (Reserva reserva : reservas) {
+            if (service.puedeCancelar(reserva)) cancelables.add(reserva.getIdReserva());
+        }
+        model.addAttribute("reservas", reservas);
+        model.addAttribute("cancelables", cancelables);
         model.addAttribute("estado", estado);
         return "f1316/reservas";
     }
@@ -47,6 +55,7 @@ public class ReservaF1316Controller {
         model.addAttribute("pago", reserva.getPago());
         model.addAttribute("duracionMinutos", service.duracionMinutos(reserva));
         model.addAttribute("puedeCancelar", service.puedeCancelar(reserva));
+        model.addAttribute("esAdmin", false);
         return "f1316/detalle";
     }
 
@@ -60,7 +69,7 @@ public class ReservaF1316Controller {
         } catch (RuntimeException ex) {
             redirect.addFlashAttribute("error", ex.getMessage());
         }
-        return "redirect:/f1316/reservas/" + id;
+        return "redirect:/f1316/reservas";
     }
 
     @GetMapping("/admin/reservas")
@@ -85,6 +94,35 @@ public class ReservaF1316Controller {
         model.addAttribute("fechaHasta", fechaHasta);
         model.addAttribute("filtros", new ReservaFiltros(idReserva, cliente, cancha, estado, fechaDesde, fechaHasta));
         return "f1316/admin-reservas";
+    }
+
+    @GetMapping("/admin/reservas/{id}")
+    public String detalleAdmin(@PathVariable Long id, HttpSession session, Model model,
+            RedirectAttributes redirect) {
+        if (!esAdmin(session)) return "redirect:/usuario/login";
+        Reserva reserva = service.detalleAdmin(id);
+        if (reserva == null) {
+            redirect.addFlashAttribute("error", "No se encontró la reserva.");
+            return "redirect:/f1316/admin/reservas";
+        }
+        model.addAttribute("reserva", reserva);
+        model.addAttribute("pago", reserva.getPago());
+        model.addAttribute("duracionMinutos", service.duracionMinutos(reserva));
+        model.addAttribute("puedeCancelar", service.puedeCancelarAdmin(reserva));
+        model.addAttribute("esAdmin", true);
+        return "f1316/detalle";
+    }
+
+    @PostMapping("/admin/reservas/{id}/cancelar")
+    public String cancelarAdmin(@PathVariable Long id, HttpSession session, RedirectAttributes redirect) {
+        if (!esAdmin(session)) return "redirect:/usuario/login";
+        try {
+            service.cancelarAdmin(id);
+            redirect.addFlashAttribute("mensaje", "La reserva fue cancelada. El pago permanece en el historial.");
+        } catch (RuntimeException ex) {
+            redirect.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/f1316/admin/reservas";
     }
 
     private Usuario usuarioCliente(HttpSession session) {

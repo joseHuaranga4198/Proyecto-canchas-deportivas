@@ -1,4 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -29,7 +30,7 @@
             <p><strong>Estado:</strong> ${reserva.estado}</p>
         </div>
 
-        <a href="${pageContext.request.contextPath}/reservas/mis-reservas" class="btn-link">Ver Mis Reservas</a>
+        <a href="<c:url value='/reservas/mis-reservas'/>" class="btn-link">Ver Mis Reservas</a>
     </div>
 </body>
 </html>

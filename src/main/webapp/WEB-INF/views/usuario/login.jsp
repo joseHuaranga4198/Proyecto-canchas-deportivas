@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Iniciar Sesión - Canchas Deportivas</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/menu.css">
+    <link rel="stylesheet" href="<c:url value='/css/menu.css'/>">
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .login-card { background: white; padding: 2.5rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
@@ -27,17 +27,17 @@
     <h2>Acceso al Sistema</h2>
 
     <c:if test="${not empty error}">
-        <div class="alert-error">${error}</div>
+        <div class="alert-error"><c:out value="${error}"/></div>
     </c:if>
     <c:if test="${param.registrado eq 'true'}">
         <div class="alert-success">Cuenta creada con éxito. Inicia sesión.</div>
     </c:if>
 
     <!-- FORMULARIO CON ATRIBUTOS NAME ESTANDARIZADOS -->
-    <form action="${pageContext.request.contextPath}/usuario/login" method="post">
+    <form action="<c:url value='/usuario/login'/>" method="post">
         <div class="form-group">
             <label for="correo">Correo Electrónico:</label>
-            <input type="email" id="correo" name="correo" required placeholder="ejemplo@canchas.pe" autocomplete="username">
+            <input type="email" id="correo" name="correo" required placeholder="Tu correo electrónico" autocomplete="username">
         </div>
 
         <div class="form-group">
@@ -49,8 +49,10 @@
     </form>
 
     <div class="links">
-        <p>¿No tienes cuenta? <a href="${pageContext.request.contextPath}/usuario/registro">Regístrate aquí</a></p>
-        <p><a href="${pageContext.request.contextPath}/canchas/catalogo">Volver al catálogo</a></p>
+        <p><a href="<c:url value='/'/>">Inicio</a> · <a href="<c:url value='/publicidad'/>">Publicidad</a> · <a href="<c:url value='/contacto'/>">Contacto</a></p>
+        <p>¿No tienes cuenta? <a href="<c:url value='/usuario/registro'/>">Regístrate aquí</a></p>
+        <p><a href="<c:url value='/canchas/catalogo'/>">Volver al catálogo</a></p>
+        <p><a href="${pageContext.request.contextPath}/usuario/login" target="_blank" rel="noopener">Abrir otra sesión</a></p>
     </div>
 </div>
 

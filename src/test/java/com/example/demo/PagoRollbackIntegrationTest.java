@@ -21,11 +21,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.example.demo.reserva.ReservaDAO;
 import com.example.demo.reserva.ReservaF1316Service;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class PagoRollbackIntegrationTest {
     @Autowired private ReservaF1316Service service;
     @Autowired private JdbcTemplate jdbc;

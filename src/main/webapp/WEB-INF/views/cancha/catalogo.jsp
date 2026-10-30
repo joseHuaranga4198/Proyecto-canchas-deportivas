@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Catálogo de Canchas Deportivas</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/menu.css">
+    <link rel="stylesheet" href="<c:url value='/css/menu.css'/>">
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding-bottom: 3rem; }
         .navbar { background: #1e293b; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; color: #fff; }
@@ -30,21 +30,25 @@
     <header class="navbar">
         <div style="font-weight: bold; font-size: 1.2rem;">⚽ Reserva de Canchas</div>
         <nav>
-            <a href="${pageContext.request.contextPath}/canchas/catalogo">Catálogo</a>
-            <a href="${pageContext.request.contextPath}/reservas/disponibilidad">Ver Horarios</a>
+            <a href="<c:url value='/'/>">Inicio</a>
+            <a href="<c:url value='/publicidad'/>">Publicidad</a>
+            <a href="<c:url value='/contacto'/>">Contacto</a>
+            <a href="<c:url value='/canchas/catalogo'/>">Catálogo</a>
+            <a href="<c:url value='/reservas/disponibilidad'/>">Ver Horarios</a>
             <c:choose>
                 <c:when test="${not empty sessionScope.usuarioLogueado}">
                     <c:if test="${sessionScope.usuarioLogueado.rol eq 'ADMINISTRADOR'}">
-                        <a href="${pageContext.request.contextPath}/admin/panel" style="color: #facc15;">Panel Admin</a>
+                        <a href="<c:url value='/admin/panel'/>" style="color: #facc15;">Panel Admin</a>
                     </c:if>
                     <c:if test="${sessionScope.usuarioLogueado.rol eq 'CLIENTE'}">
-                        <a href="${pageContext.request.contextPath}/reservas/mis-reservas">Mis Reservas</a>
+                        <a href="<c:url value='/reservas/mis-reservas'/>">Mis Reservas</a>
                     </c:if>
-                    <a href="${pageContext.request.contextPath}/usuario/logout" style="color: #ef4444;">Salir (${sessionScope.usuarioLogueado.nombres})</a>
+                    <a href="<c:url value='/usuario/logout'/>" style="color: #ef4444;">Salir (${sessionScope.usuarioLogueado.nombres})</a>
                 </c:when>
                 <c:otherwise>
-                    <a href="${pageContext.request.contextPath}/usuario/login">Iniciar Sesión</a>
-                    <a href="${pageContext.request.contextPath}/usuario/registro">Registrarse</a>
+                    <a href="<c:url value='/usuario/login'/>">Iniciar Sesión</a>
+                    <a href="<c:url value='/usuario/registro'/>">Registrarse</a>
+                    <a href="${pageContext.request.contextPath}/usuario/login" target="_blank" rel="noopener">Abrir otra sesión</a>
                 </c:otherwise>
             </c:choose>
         </nav>
@@ -65,8 +69,8 @@
                     <div>
                         <div class="precio">S/ ${c.precioHora} <span style="font-size: 0.85rem; color: #64748b; font-weight: normal;">/ hora</span></div>
                         <div class="btn-group">
-                            <a href="${pageContext.request.contextPath}/reservas/disponibilidad?canchaId=${c.idCancha}" class="btn-horarios">Horarios</a>
-                            <a href="${pageContext.request.contextPath}/reservas/nueva?canchaId=${c.idCancha}" class="btn-reservar">Reservar Turno</a>
+                            <a href="<c:url value='/reservas/disponibilidad?canchaId=${c.idCancha}'/>" class="btn-horarios">Horarios</a>
+                            <a href="<c:url value='/reservas/nueva?canchaId=${c.idCancha}'/>" class="btn-reservar">Reservar Turno</a>
                         </div>
                     </div>
                 </article>

@@ -27,10 +27,14 @@
     <header class="navbar">
         <div style="font-weight: bold; font-size: 1.2rem;">⚽ Reserva de Canchas</div>
         <nav>
-            <a href="${pageContext.request.contextPath}/canchas/catalogo">Catálogo</a>
-            <a href="${pageContext.request.contextPath}/reservas/disponibilidad">Ver Horarios</a>
-            <a href="${pageContext.request.contextPath}/reservas/mis-reservas" style="color: #38bdf8;">Mis Reservas</a>
-            <a href="${pageContext.request.contextPath}/usuario/logout" style="color: #ef4444;">Salir (${sessionScope.usuarioLogueado.nombres})</a>
+            <a href="<c:url value='/'/>">Inicio</a>
+            <a href="<c:url value='/publicidad'/>">Publicidad</a>
+            <a href="<c:url value='/contacto'/>">Contacto</a>
+            <a href="<c:url value='/canchas/catalogo'/>">Catálogo</a>
+            <a href="<c:url value='/reservas/disponibilidad'/>">Ver Horarios</a>
+            <a href="<c:url value='/reservas/mis-reservas'/>" style="color: #38bdf8;">Mis Reservas</a>
+            <a href="<c:url value='/usuario/logout'/>" style="color: #ef4444;">Salir (${sessionScope.usuarioLogueado.nombres})</a>
+            <a href="${pageContext.request.contextPath}/usuario/login" target="_blank" rel="noopener">Abrir otra sesión</a>
         </nav>
     </header>
 
@@ -66,11 +70,11 @@
                             </td>
                             <td>
                                 <c:if test="${r.estado eq 'PENDIENTE'}">
-                                    <a href="${pageContext.request.contextPath}/reservas/pago/${r.idReserva}" class="btn-pay">Pagar</a>
+                                    <a href="<c:url value='/reservas/pago/${r.idReserva}'/>" class="btn-pay">Pagar</a>
                                 </c:if>
                                 <c:if test="${r.estado ne 'CANCELADA'}">
-                                    <form action="${pageContext.request.contextPath}/reservas/cancelar/${r.idReserva}" method="post" style="display:inline; margin-left: 0.3rem;">
-                                        <button type="submit" class="btn-cancel" onclick="return confirm('¿Estás seguro de cancelar este turno?');">Cancelar</button>
+                                    <form action="<c:url value='/reservas/cancelar/${r.idReserva}'/>" method="post" style="display:inline; margin-left: 0.3rem;">
+                                        <button type="submit" class="btn-cancel">Cancelar</button>
                                     </form>
                                 </c:if>
                             </td>
@@ -78,7 +82,7 @@
                     </c:forEach>
                     <c:if test="${empty reservas}">
                         <tr>
-                            <td colspan="7" style="text-align: center; color: #64748b; padding: 2rem;">No tienes reservas realizadas. <a href="${pageContext.request.contextPath}/canchas/catalogo">Reservar una cancha</a></td>
+                            <td colspan="7" style="text-align: center; color: #64748b; padding: 2rem;">No tienes reservas realizadas. <a href="<c:url value='/canchas/catalogo'/>">Reservar una cancha</a></td>
                         </tr>
                     </c:if>
                 </tbody>

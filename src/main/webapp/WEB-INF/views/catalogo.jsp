@@ -1,11 +1,12 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Catálogo de Canchas Deportivas</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/menu.css">
+    <link rel="stylesheet" href="<c:url value='/css/menu.css'/>">
     <style>
         .catalogo-container { max-width: 1100px; margin: 2rem auto; font-family: sans-serif; padding: 0 1rem; }
         .grid-canchas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
@@ -29,7 +30,7 @@
                     <h3>${c.nombre}</h3>
                     <p>${c.caracteristicas}</p>
                     <div class="precio">S/ ${c.precioHora} <span style="font-size: 0.85rem; color: #666; font-weight: normal;">/ hora</span></div>
-                    <a href="${pageContext.request.contextPath}/reservas/nueva?canchaId=${c.id}" class="btn-reservar">Reservar Turno</a>
+                    <a href="<c:url value='/reservas/nueva?canchaId=${c.id}'/>" class="btn-reservar">Reservar Turno</a>
                 </div>
             </c:forEach>
         </div>

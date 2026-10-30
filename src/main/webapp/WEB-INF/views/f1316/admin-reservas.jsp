@@ -13,10 +13,14 @@
 <header class="topbar">
   <a class="brand" href="<c:url value='/admin/panel'/>">⚽ CanchaYa <span class="brand-tag">ADMIN</span></a>
   <nav aria-label="Navegación administrativa">
+    <a href="<c:url value='/'/>">Inicio</a>
+    <a href="<c:url value='/publicidad'/>">Publicidad</a>
+    <a href="<c:url value='/contacto'/>">Contacto</a>
     <a href="<c:url value='/admin/panel'/>">Panel</a>
     <a href="<c:url value='/canchas/admin'/>">Canchas</a>
     <a class="active" href="<c:url value='/f1316/admin/reservas'/>">Reservas</a>
     <a href="<c:url value='/usuario/logout'/>">Cerrar sesión</a>
+    <a href="${pageContext.request.contextPath}/usuario/login" target="_blank" rel="noopener">Abrir otra sesión</a>
   </nav>
 </header>
 <main class="container">
@@ -40,10 +44,11 @@
 
   <section class="panel" aria-labelledby="table-title">
     <div class="panel-heading"><h2 id="table-title">Resultados</h2><span class="muted"><c:out value="${fn:length(reservas)}"/> reserva(s)</span></div>
+    <p class="table-hint">Al pulsar «Cancelar» confirmas la acción administrativa. El historial del pago se conserva.</p>
     <c:choose>
       <c:when test="${not empty reservas}">
         <div class="table-scroll"><table>
-          <thead><tr><th>Código</th><th>Cliente</th><th>Cancha</th><th>Fecha</th><th>Horario</th><th>Importe</th><th>Estado</th></tr></thead>
+          <thead><tr><th>Código</th><th>Cliente</th><th>Cancha</th><th>Fecha</th><th>Horario</th><th>Importe</th><th>Estado</th><th>Acciones</th></tr></thead>
           <tbody><c:forEach var="reserva" items="${reservas}">
             <tr>
               <td>#<c:out value="${reserva.idReserva}"/></td>
@@ -56,6 +61,9 @@
                 <c:when test="${reserva.estado eq 'CANCELADA'}"><span class="badge cancelled"><c:out value="${reserva.estado}"/></span></c:when>
                 <c:otherwise><span class="badge confirmed"><c:out value="${reserva.estado}"/></span></c:otherwise>
               </c:choose></td>
+              <td class="row-actions"><a class="button small secondary" href="<c:url value='/f1316/admin/reservas/${reserva.idReserva}'/>">Ver detalle</a>
+                <c:if test="${reserva.estado eq 'CONFIRMADA'}"><form method="post" action="<c:url value='/f1316/admin/reservas/${reserva.idReserva}/cancelar'/>"><button class="button small danger" type="submit">Cancelar</button></form></c:if>
+              </td>
             </tr>
           </c:forEach></tbody>
         </table></div>
