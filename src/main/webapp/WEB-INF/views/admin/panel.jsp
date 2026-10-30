@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Panel Administrativo - Canchas Deportivas</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/menu.css">
+    <link rel="stylesheet" href="<c:url value='/css/menu.css'/>">
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding-bottom: 3rem; }
         .navbar { background: #0f172a; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; color: #fff; }
@@ -34,12 +34,16 @@
     <header class="navbar">
         <div style="font-weight: bold; font-size: 1.2rem;">⚙️ Administración de Canchas</div>
         <nav>
-            <a href="${pageContext.request.contextPath}/admin/panel" style="color: #38bdf8;">Panel</a>
-            <a href="${pageContext.request.contextPath}/canchas/admin">Canchas</a>
-            <a href="${pageContext.request.contextPath}/admin/categorias">Categorías</a>
-            <a href="${pageContext.request.contextPath}/admin/reservas">Reservas</a>
-            <a href="${pageContext.request.contextPath}/usuario/admin/lista">Clientes</a>
-            <a href="${pageContext.request.contextPath}/usuario/logout" style="color: #f87171;">Cerrar Sesión</a>
+            <a href="<c:url value='/'/>">Inicio</a>
+            <a href="<c:url value='/publicidad'/>">Publicidad</a>
+            <a href="<c:url value='/contacto'/>">Contacto</a>
+            <a href="<c:url value='/admin/panel'/>" style="color: #38bdf8;">Panel</a>
+            <a href="<c:url value='/canchas/admin'/>">Canchas</a>
+            <a href="<c:url value='/admin/categorias'/>">Categorías</a>
+            <a href="<c:url value='/admin/reservas'/>">Reservas</a>
+            <a href="<c:url value='/usuario/admin/lista'/>">Clientes</a>
+            <a href="<c:url value='/usuario/logout'/>" style="color: #f87171;">Cerrar Sesión</a>
+            <a href="${pageContext.request.contextPath}/usuario/login" target="_blank" rel="noopener">Abrir otra sesión</a>
         </nav>
     </header>
 
@@ -64,7 +68,7 @@
         <div class="section-box">
             <div class="section-header">
                 <h3>Reservas Recientes</h3>
-                <a href="${pageContext.request.contextPath}/admin/reservas" style="color: #2563eb; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Ver Todas &rarr;</a>
+                <a href="<c:url value='/admin/reservas'/>" style="color: #2563eb; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Ver Todas &rarr;</a>
             </div>
 
             <table>

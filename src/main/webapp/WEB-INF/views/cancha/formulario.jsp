@@ -27,7 +27,7 @@
             </c:choose>
         </h2>
 
-        <form action="${pageContext.request.contextPath}/canchas/admin/guardar" method="post">
+        <form action="<c:url value='/canchas/admin/guardar'/>" method="post">
             <input type="hidden" name="idCancha" value="${cancha.idCancha}">
 
             <div class="form-group">
@@ -65,7 +65,7 @@
             </div>
 
             <button type="submit" class="btn-submit">Guardar Cancha</button>
-            <a href="${pageContext.request.contextPath}/canchas/admin" class="btn-cancelar">Cancelar y Volver</a>
+            <a href="<c:url value='/canchas/admin'/>" class="btn-cancelar">Cancelar y Volver</a>
         </form>
     </div>
 </body>

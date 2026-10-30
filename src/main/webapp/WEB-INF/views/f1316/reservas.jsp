@@ -13,9 +13,13 @@
 <header class="topbar">
   <a class="brand" href="<c:url value='/canchas/catalogo'/>">⚽ CanchaYa</a>
   <nav aria-label="Navegación principal">
+    <a href="<c:url value='/'/>">Inicio</a>
+    <a href="<c:url value='/publicidad'/>">Publicidad</a>
+    <a href="<c:url value='/contacto'/>">Contacto</a>
     <a href="<c:url value='/canchas/catalogo'/>">Canchas</a>
     <a class="active" href="<c:url value='/f1316/reservas'/>">Mis reservas</a>
     <a href="<c:url value='/usuario/logout'/>">Cerrar sesión</a>
+    <a href="${pageContext.request.contextPath}/usuario/login" target="_blank" rel="noopener">Abrir otra sesión</a>
   </nav>
 </header>
 <main class="container">
@@ -26,21 +30,19 @@
   </div>
 
   <c:if test="${not empty error}"><p class="notice error" role="alert"><c:out value="${error}"/></p></c:if>
+  <c:if test="${not empty mensaje}"><p class="notice success" role="status"><c:out value="${mensaje}"/></p></c:if>
 
-  <form class="filters" method="get" action="<c:url value='/f1316/reservas'/>">
-    <label for="estado">Filtrar por estado</label>
-    <select id="estado" name="estado">
-      <option value="" <c:if test="${empty estado}">selected</c:if>>Todos</option>
-      <option value="CONFIRMADA" <c:if test="${estado eq 'CONFIRMADA'}">selected</c:if>>Confirmada</option>
-      <option value="CANCELADA" <c:if test="${estado eq 'CANCELADA'}">selected</c:if>>Cancelada</option>
-    </select>
-    <button class="button secondary" type="submit">Aplicar filtro</button>
-    <a class="button quiet" href="<c:url value='/f1316/reservas'/>">Limpiar</a>
-  </form>
+  <nav class="filters" aria-label="Filtrar reservas por estado">
+    <strong>Estado:</strong>
+    <a class="button <c:if test='${empty estado}'>primary</c:if><c:if test='${not empty estado}'>quiet</c:if>" href="<c:url value='/f1316/reservas'/>">Todas</a>
+    <a class="button <c:if test='${estado eq "CONFIRMADA"}'>primary</c:if><c:if test='${estado ne "CONFIRMADA"}'>quiet</c:if>" href="<c:url value='/f1316/reservas'><c:param name='estado' value='CONFIRMADA'/></c:url>">Confirmadas</a>
+    <a class="button <c:if test='${estado eq "CANCELADA"}'>primary</c:if><c:if test='${estado ne "CANCELADA"}'>quiet</c:if>" href="<c:url value='/f1316/reservas'><c:param name='estado' value='CANCELADA'/></c:url>">Canceladas</a>
+  </nav>
 
   <section class="panel" aria-labelledby="reservas-title">
     <div class="panel-heading"><h2 id="reservas-title">Historial</h2>
       <span class="muted"><c:out value="${fn:length(reservas)}"/> resultado(s)</span></div>
+    <p class="table-hint">Al pulsar «Cancelar» confirmas la solicitud. Solo puedes cancelar con 24 horas o más antes del inicio.</p>
     <c:choose>
       <c:when test="${not empty reservas}">
         <div class="table-scroll"><table>
@@ -57,7 +59,14 @@
                 <c:when test="${reserva.estado eq 'CANCELADA'}"><span class="badge cancelled"><c:out value="${reserva.estado}"/></span></c:when>
                 <c:otherwise><span class="badge confirmed"><c:out value="${reserva.estado}"/></span></c:otherwise>
               </c:choose></td>
-              <td><a class="button small secondary" href="<c:url value='/f1316/reservas/${reserva.idReserva}'/>">Ver detalle</a></td>
+              <td class="row-actions">
+                <a class="button small secondary" href="<c:url value='/f1316/reservas/${reserva.idReserva}'/>">Ver detalle</a>
+                <c:if test="${cancelables.contains(reserva.idReserva)}">
+                  <form method="post" action="<c:url value='/f1316/reservas/${reserva.idReserva}/cancelar'/>">
+                    <button class="button small danger" type="submit">Cancelar</button>
+                  </form>
+                </c:if>
+              </td>
             </tr>
           </c:forEach>
           </tbody>

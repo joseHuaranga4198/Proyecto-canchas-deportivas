@@ -1,6 +1,7 @@
 package com.example.demo.usuario;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +22,8 @@ public class UsuarioController {
     }
 
     @GetMapping("/login")
-    public String loginView() {
+    public String loginView(HttpSession session) {
+        if (session.getAttribute("usuarioLogueado") != null) return "redirect:/";
         return "usuario/login";
     }
 
@@ -29,7 +31,7 @@ public class UsuarioController {
     public String procesarLogin(@RequestParam(name = "correo", required = false) String correo,
                                 @RequestParam(name = "contrasena", required = false) String contrasena,
                                 @RequestParam(name = "password", required = false) String password,
-                                HttpSession session,
+                                HttpSession session, HttpServletRequest request,
                                 Model model) {
 
         String passFinal = (contrasena != null && !contrasena.isBlank()) ? contrasena : password;
@@ -51,6 +53,8 @@ public class UsuarioController {
             return "usuario/login";
         }
 
+        request.changeSessionId();
+        session.removeAttribute("reservaBorrador");
         session.setAttribute("usuarioLogueado", user);
 
         if ("ADMINISTRADOR".equalsIgnoreCase(user.getRol())) {
@@ -63,7 +67,7 @@ public class UsuarioController {
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
-        return "redirect:/usuario/login";
+        return "redirect:/";
     }
 
     @GetMapping("/registro")

@@ -12,13 +12,17 @@
 <header class="topbar">
   <a class="brand" href="<c:url value='/canchas/catalogo'/>">⚽ CanchaYa</a>
   <nav aria-label="Navegación principal">
+    <a href="<c:url value='/'/>">Inicio</a>
+    <a href="<c:url value='/publicidad'/>">Publicidad</a>
+    <a href="<c:url value='/contacto'/>">Contacto</a>
     <a href="<c:url value='/canchas/catalogo'/>">Canchas</a>
-    <a class="active" href="<c:url value='/f1316/reservas'/>">Mis reservas</a>
+    <c:choose><c:when test="${esAdmin}"><a class="active" href="<c:url value='/f1316/admin/reservas'/>">Reservas</a></c:when><c:otherwise><a class="active" href="<c:url value='/f1316/reservas'/>">Mis reservas</a></c:otherwise></c:choose>
     <a href="<c:url value='/usuario/logout'/>">Cerrar sesión</a>
+    <a href="${pageContext.request.contextPath}/usuario/login" target="_blank" rel="noopener">Abrir otra sesión</a>
   </nav>
 </header>
 <main class="container narrow">
-  <a class="back-link" href="<c:url value='/f1316/reservas'/>">← Volver a mis reservas</a>
+  <c:choose><c:when test="${esAdmin}"><a class="back-link" href="<c:url value='/f1316/admin/reservas'/>">← Volver a reservas</a></c:when><c:otherwise><a class="back-link" href="<c:url value='/f1316/reservas'/>">← Volver a mis reservas</a></c:otherwise></c:choose>
   <div class="page-heading">
     <div><p class="eyebrow">RESERVA #<c:out value="${reserva.idReserva}"/></p><h1>Detalle de reserva</h1></div>
     <c:choose>
@@ -57,21 +61,6 @@
     <c:if test="${reserva.estado eq 'CANCELADA'}"><p class="muted refund-note">La reserva está cancelada. La cancelación por sí sola no confirma una devolución del dinero.</p></c:if>
   </section>
 
-  <c:if test="${reserva.estado ne 'CANCELADA'}">
-    <section class="cancel-box">
-      <div><h2>¿Necesitas cancelar?</h2>
-        <c:choose>
-          <c:when test="${puedeCancelar}"><p>Puedes cancelar hasta 24 horas antes del inicio, incluido el límite exacto. Al pulsar el botón confirmas que solicitas cancelar esta reserva.</p></c:when>
-          <c:otherwise><p>Ya pasó el límite de 24 horas previo al inicio. Esta reserva no se puede cancelar desde la cuenta del cliente.</p></c:otherwise>
-        </c:choose>
-      </div>
-      <c:if test="${puedeCancelar}">
-        <form method="post" action="<c:url value='/f1316/reservas/${reserva.idReserva}/cancelar'/>">
-          <button class="button danger" type="submit">Cancelar reserva</button>
-        </form>
-      </c:if>
-    </section>
-  </c:if>
 </main>
 <footer>CanchaYa · Sistema de reservas de canchas deportivas</footer>
 </body>

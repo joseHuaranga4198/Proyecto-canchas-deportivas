@@ -27,7 +27,7 @@
             <div class="alerta-error">${error}</div>
         </c:if>
 
-        <form action="${pageContext.request.contextPath}/usuario/registro" method="post">
+        <form action="<c:url value='/usuario/registro'/>" method="post">
             <div class="form-group">
                 <label for="nombres">Nombres:</label>
                 <input type="text" id="nombres" name="nombres" required>
@@ -62,7 +62,7 @@
         </form>
 
         <div class="links">
-            ¿Ya tienes cuenta? <a href="${pageContext.request.contextPath}/usuario/login">Inicia Sesión</a>
+            ¿Ya tienes cuenta? <a href="<c:url value='/usuario/login'/>">Inicia Sesión</a>
         </div>
     </div>
 </body>

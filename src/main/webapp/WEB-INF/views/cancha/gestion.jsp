@@ -27,9 +27,9 @@
         <div class="header-actions">
             <div>
                 <h2>Gestión de Canchas Deportivas (I10)</h2>
-                <a href="${pageContext.request.contextPath}/admin/panel" class="btn-panel">← Volver al Panel</a>
+                <a href="<c:url value='/admin/panel'/>" class="btn-panel">← Volver al Panel</a>
             </div>
-            <a href="${pageContext.request.contextPath}/canchas/admin/nueva" class="btn-crear">+ Registrar Cancha</a>
+            <a href="<c:url value='/canchas/admin/nueva'/>" class="btn-crear">+ Registrar Cancha</a>
         </div>
 
         <table>
@@ -63,9 +63,9 @@
                             </c:choose>
                         </td>
                         <td>
-                            <a href="${pageContext.request.contextPath}/canchas/admin/editar/${c.idCancha}" class="btn-editar">Editar</a>
+                            <a href="<c:url value='/canchas/admin/editar/${c.idCancha}'/>" class="btn-editar">Editar</a>
 
-                            <form action="${pageContext.request.contextPath}/canchas/admin/estado/${c.idCancha}" method="post" style="display:inline; margin-left: 0.3rem;">
+                            <form action="<c:url value='/canchas/admin/estado/${c.idCancha}'/>" method="post" style="display:inline; margin-left: 0.3rem;">
                                 <c:choose>
                                     <c:when test="${c.estado == 'ACTIVA'}">
                                         <input type="hidden" name="estado" value="INACTIVA">

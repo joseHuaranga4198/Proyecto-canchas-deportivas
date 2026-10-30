@@ -34,10 +34,10 @@
     <div class="navbar">
         <h2>Reserva de Canchas Deportivas</h2>
         <div class="nav-links">
-            <a href="${pageContext.request.contextPath}/canchas/catalogo">Catálogo</a>
-            <a href="${pageContext.request.contextPath}/reservas/disponibilidad">Disponibilidad</a>
-            <a href="${pageContext.request.contextPath}/reservas/mis-reservas">Mis Reservas</a>
-            <a href="${pageContext.request.contextPath}/usuario/login">Iniciar Sesión</a>
+            <a href="<c:url value='/canchas/catalogo'/>">Catálogo</a>
+            <a href="<c:url value='/reservas/disponibilidad'/>">Disponibilidad</a>
+            <a href="<c:url value='/reservas/mis-reservas'/>">Mis Reservas</a>
+            <a href="<c:url value='/usuario/login'/>">Iniciar Sesión</a>
         </div>
     </div>
 
@@ -45,7 +45,7 @@
         <h2>Consulta de Disponibilidad de Canchas (I04)</h2>
 
         <div class="filter-card">
-            <form action="${pageContext.request.contextPath}/reservas/disponibilidad" method="get" class="filter-form">
+            <form action="<c:url value='/reservas/disponibilidad'/>" method="get" class="filter-form">
                 <div class="form-group">
                     <label for="canchaId">Seleccionar Cancha:</label>
                     <select id="canchaId" name="canchaId" required>
@@ -73,7 +73,7 @@
                         <h3>${canchaSeleccionada.nombre}</h3>
                         <p><strong>Disciplina:</strong> ${canchaSeleccionada.categoria.nombre} | <strong>Tarifa:</strong> S/ ${canchaSeleccionada.precioHora} por hora</p>
                     </div>
-                    <a href="${pageContext.request.contextPath}/reservas/nueva?canchaId=${canchaSeleccionada.idCancha}" class="btn-reservar-ahora">+ Reservar Turno</a>
+                    <a href="<c:url value='/reservas/nueva?canchaId=${canchaSeleccionada.idCancha}'/>" class="btn-reservar-ahora">+ Reservar Turno</a>
                 </div>
             </div>
 

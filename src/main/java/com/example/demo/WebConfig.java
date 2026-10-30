@@ -7,11 +7,23 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.util.UrlPathHelper;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void configurePathMatch(PathMatchConfigurer configurer) {
+        // Tomcat usa ;jsessionid para separar sesiones. Se elimina al buscar la ruta MVC,
+        // incluso en el inicio /;jsessionid=..., pero Tomcat conserva la sesión asociada.
+        UrlPathHelper rutas = new UrlPathHelper();
+        rutas.setRemoveSemicolonContent(true);
+        configurer.setPatternParser(null);
+        configurer.setUrlPathHelper(rutas);
+    }
 
     @Bean
     public LocaleResolver localeResolver() {
@@ -30,6 +42,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+        registry.addInterceptor(new AccesoAdminInterceptor())
+                .addPathPatterns("/admin/**", "/f1316/admin/**", "/canchas/admin/**", "/usuario/admin/**");
     }
     
 }

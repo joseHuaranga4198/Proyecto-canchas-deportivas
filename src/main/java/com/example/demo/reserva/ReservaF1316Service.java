@@ -42,6 +42,10 @@ public class ReservaF1316Service {
         return reserva;
     }
 
+    public Reserva detalleAdmin(Long idReserva) {
+        return reservas.obtenerPorId(idReserva);
+    }
+
     public long duracionMinutos(Reserva reserva) {
         return Duration.between(reserva.getHoraInicio(), reserva.getHoraFin()).toMinutes();
     }
@@ -54,6 +58,10 @@ public class ReservaF1316Service {
         if (!"CONFIRMADA".equalsIgnoreCase(reserva.getEstado())) return false;
         LocalDateTime inicio = LocalDateTime.of(reserva.getFecha(), reserva.getHoraInicio());
         return Duration.between(LocalDateTime.now(clock), inicio).compareTo(Duration.ofHours(24)) >= 0;
+    }
+
+    public boolean puedeCancelarAdmin(Reserva reserva) {
+        return reserva != null && "CONFIRMADA".equalsIgnoreCase(reserva.getEstado());
     }
 
     public List<Reserva> buscarAdmin(Long idReserva, String cliente, String cancha, String estado,
@@ -123,6 +131,16 @@ public class ReservaF1316Service {
         }
         if (!puedeCancelar(reserva)) {
             throw new IllegalStateException("Solo puedes cancelar hasta 24 horas antes del inicio.");
+        }
+        reservas.cambiarEstado(idReserva, "CANCELADA");
+    }
+
+    @Transactional
+    public void cancelarAdmin(Long idReserva) {
+        Reserva reserva = reservas.obtenerPorId(idReserva);
+        if (reserva == null) throw new IllegalArgumentException("No se encontró la reserva.");
+        if (!puedeCancelarAdmin(reserva)) {
+            throw new IllegalStateException("Solo se pueden cancelar reservas confirmadas.");
         }
         reservas.cambiarEstado(idReserva, "CANCELADA");
     }

@@ -27,13 +27,13 @@
     <div class="box">
         <div class="top-bar">
             <h2>Gestión de Categorías de Canchas (I11)</h2>
-            <a href="${pageContext.request.contextPath}/admin/panel" class="btn-volver">← Volver al Panel</a>
+            <a href="<c:url value='/admin/panel'/>" class="btn-volver">← Volver al Panel</a>
         </div>
 
         <div class="grid-layout">
             <div class="form-card">
                 <h3>Nueva Categoría</h3>
-                <form action="${pageContext.request.contextPath}/admin/categorias/guardar" method="post">
+                <form action="<c:url value='/admin/categorias/guardar'/>" method="post">
                     <div class="form-group">
                         <label for="nombre">Nombre de Categoría:</label>
                         <input type="text" id="nombre" name="nombre" required placeholder="Ej: Vóley">
@@ -73,8 +73,8 @@
                                 <td>${cat.descripcion}</td>
                                 <td><span class="badge">${cat.estado}</span></td>
                                 <td>
-                                    <form action="${pageContext.request.contextPath}/admin/categorias/eliminar/${cat.idCategoria}" method="post" style="display:inline;">
-                                        <button type="submit" class="btn-del" onclick="return confirm('¿Eliminar categoría?')">Eliminar</button>
+                                    <form action="<c:url value='/admin/categorias/eliminar/${cat.idCategoria}'/>" method="post" style="display:inline;">
+                                        <button type="submit" class="btn-del">Eliminar</button>
                                     </form>
                                 </td>
                             </tr>

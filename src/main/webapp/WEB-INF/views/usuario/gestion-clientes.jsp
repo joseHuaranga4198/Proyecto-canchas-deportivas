@@ -23,7 +23,7 @@
     <div class="box">
         <div class="header-actions">
             <h2>Gestión de Clientes (I14)</h2>
-            <a href="${pageContext.request.contextPath}/admin/panel" class="btn-volver">← Volver al Panel</a>
+            <a href="<c:url value='/admin/panel'/>" class="btn-volver">← Volver al Panel</a>
         </div>
 
         <table>
@@ -57,7 +57,7 @@
                             </c:choose>
                         </td>
                         <td>
-                            <form action="${pageContext.request.contextPath}/usuario/admin/bloquear/${c.idUsuario}" method="post" style="display:inline;">
+                            <form action="<c:url value='/usuario/admin/bloquear/${c.idUsuario}'/>" method="post" style="display:inline;">
                                 <c:choose>
                                     <c:when test="${c.estado == 'ACTIVO'}">
                                         <button type="submit" class="btn-bloquear">Bloquear</button>

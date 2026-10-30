@@ -30,7 +30,7 @@
         <div class="total-row"><span>Total a Pagar:</span><span>S/ ${reserva.importe}</span></div>
     </div>
 
-    <form action="${pageContext.request.contextPath}/reservas/pago/procesar" method="post">
+    <form action="<c:url value='/reservas/pago/procesar'/>" method="post">
         <button type="submit" class="btn-pagar">Simular Pago Exitoso</button>
     </form>
 </div>
