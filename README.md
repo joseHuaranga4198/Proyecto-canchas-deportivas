@@ -1,5 +1,15 @@
 # Sistema de reserva de canchas deportivas
 
+## Datos para exposición
+
+Para iniciar con cuentas y casos ficticios preparados, ejecutar en PowerShell:
+
+```powershell
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=demo"
+```
+
+Consultar [EXPOSICION.md](EXPOSICION.md) para las credenciales y el recorrido de demostración. Este perfil usa una base en memoria independiente: no altera los datos habituales y se reinicia al cerrar la aplicación. El arranque normal continúa sin datos precargados.
+
 ## Rama `woshtsu`: F13–F16
 
 | Código | Función |
