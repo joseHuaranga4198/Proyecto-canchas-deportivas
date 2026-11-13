@@ -49,7 +49,7 @@ public class CanchaRepository implements CanchaDAO {
                 "cat.id_categoria, cat.nombre AS nombre_categoria, cat.descripcion AS descripcion_categoria, cat.estado AS estado_categoria " +
                 "FROM cancha c " +
                 "JOIN categoria cat ON cat.id_categoria = c.id_categoria " +
-                "WHERE c.estado = 'ACTIVA' " +
+                "WHERE c.estado = 'ACTIVA' AND cat.estado = 'ACTIVA' " +
                 "ORDER BY c.id_cancha";
         return jdbcTemplate.query(sql, canchaRowMapper);
     }

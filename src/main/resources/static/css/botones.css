@@ -1,0 +1,32 @@
+/* Una base para botones y enlaces de acción. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 10px 15px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font: 600 14px/1.35 Inter, "Segoe UI", Arial, sans-serif;
+  color: #214da8;
+  background: #edf2ff;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+}
+.button:hover { background: #dfe9ff; }
+.button.primary { background: #2563eb; color: #fff; }
+.button.primary:hover { background: #1f52ba; }
+.button.danger { background: #bb3442; color: #fff; }
+.button.danger:hover { background: #9d2633; }
+.button.success { background: #176c45; color: #fff; }
+.button.success:hover { background: #105235; }
+.button.quiet { background: transparent; color: #41516e; }
+.button.quiet:hover { background: #edf2ff; }
+.button.small { min-height: 34px; font-size: 13px; padding: 7px 11px; }
+.button.full { display: flex; width: 100%; }
+.button.full + .button.full { margin-top: 8px; }
+.button:focus-visible { outline: 2px solid #4784ff; outline-offset: 2px; }
+.button:disabled { opacity: .6; cursor: not-allowed; }

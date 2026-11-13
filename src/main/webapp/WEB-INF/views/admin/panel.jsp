@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Panel Administrativo - Canchas Deportivas</title>
     <link rel="stylesheet" href="<c:url value='/css/menu.css'/>">
     <style>
@@ -28,24 +28,12 @@
         .badge-pendiente { background: #fef9c3; color: #854d0e; }
         .badge-cancelada { background: #fee2e2; color: #b91c1c; }
     </style>
+<link rel="stylesheet" href="<c:url value='/css/navegacion.css'/>">
+<link rel="stylesheet" href="<c:url value='/css/sistema.css'/>">  <link rel="stylesheet" href="<c:url value='/css/botones.css'/>">
 </head>
 <body>
 
-    <header class="navbar">
-        <div style="font-weight: bold; font-size: 1.2rem;">⚙️ Administración de Canchas</div>
-        <nav>
-            <a href="<c:url value='/'/>">Inicio</a>
-            <a href="<c:url value='/publicidad'/>">Publicidad</a>
-            <a href="<c:url value='/contacto'/>">Contacto</a>
-            <a href="<c:url value='/admin/panel'/>" style="color: #38bdf8;">Panel</a>
-            <a href="<c:url value='/canchas/admin'/>">Canchas</a>
-            <a href="<c:url value='/admin/categorias'/>">Categorías</a>
-            <a href="<c:url value='/admin/reservas'/>">Reservas</a>
-            <a href="<c:url value='/usuario/admin/lista'/>">Clientes</a>
-            <a href="<c:url value='/usuario/logout'/>" style="color: #f87171;">Cerrar Sesión</a>
-            <a href="${pageContext.request.contextPath}/usuario/login" target="_blank" rel="noopener">Abrir otra sesión</a>
-        </nav>
-    </header>
+    <%@ include file="/WEB-INF/views/comun/cabecera.jspf" %>
 
     <main class="container">
         <h2>Resumen Operativo</h2>
@@ -68,10 +56,10 @@
         <div class="section-box">
             <div class="section-header">
                 <h3>Reservas Recientes</h3>
-                <a href="<c:url value='/admin/reservas'/>" style="color: #2563eb; text-decoration: none; font-weight: 600; font-size: 0.9rem;">Ver Todas &rarr;</a>
+                <a href="<c:url value='/reservas/admin'/>" class="button secondary small">Ver Todas &rarr;</a>
             </div>
 
-            <table>
+            <div class="table-scroll"><table>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -87,8 +75,8 @@
                     <c:forEach var="r" items="${reservasRecientes}">
                         <tr>
                             <td>#${r.idReserva}</td>
-                            <td>${r.usuario.nombres} ${r.usuario.apellidos}</td>
-                            <td>${r.cancha.nombre}</td>
+                            <td><c:out value='${r.usuario.nombres}'/> <c:out value='${r.usuario.apellidos}'/></td>
+                            <td><c:out value='${r.cancha.nombre}'/></td>
                             <td>${r.fecha}</td>
                             <td>${r.horaInicio} - ${r.horaFin}</td>
                             <td>S/ ${r.importe}</td>
@@ -107,7 +95,7 @@
                         </tr>
                     </c:if>
                 </tbody>
-            </table>
+            </table></div>
         </div>
     </main>
 

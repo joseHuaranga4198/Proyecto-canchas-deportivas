@@ -28,9 +28,18 @@ public class UsuarioRepository implements UsuarioDAO {
 
     @Override
     public Usuario autenticar(String correo, String contrasena) {
-        String sql = "SELECT * FROM usuario WHERE correo = ? AND contrasena = ?";
-        List<Usuario> lista = jdbcTemplate.query(sql, usuarioRowMapper, correo, contrasena);
-        return lista.isEmpty() ? null : lista.get(0);
+        List<Usuario> lista = jdbcTemplate.query("SELECT * FROM usuario WHERE LOWER(correo) = LOWER(?)", usuarioRowMapper, correo);
+        if (lista.isEmpty()) return null;
+        Usuario usuario = lista.get(0);
+        String clave = usuario.getContrasena();
+        if (com.example.demo.config.Claves.esHash(clave)) {
+            return com.example.demo.config.Claves.coincide(contrasena, clave) ? usuario : null;
+        }
+        if (!java.util.Objects.equals(clave, contrasena)) return null;
+        String hash = com.example.demo.config.Claves.hash(contrasena);
+        jdbcTemplate.update("UPDATE usuario SET contrasena=? WHERE id_usuario=? AND contrasena=?", hash, usuario.getIdUsuario(), clave);
+        usuario.setContrasena(hash);
+        return usuario;
     }
 
     @Override
@@ -56,7 +65,7 @@ public class UsuarioRepository implements UsuarioDAO {
                 usuario.getDocumento(),
                 usuario.getTelefono(),
                 usuario.getCorreo(),
-                usuario.getContrasena(),
+                com.example.demo.config.Claves.hash(usuario.getContrasena()),
                 usuario.getRol(),
                 usuario.getEstado()
         );
@@ -70,7 +79,7 @@ public class UsuarioRepository implements UsuarioDAO {
 
     @Override
     public boolean existeCorreo(String correo) {
-        String sql = "SELECT COUNT(*) FROM usuario WHERE correo = ?";
+        String sql = "SELECT COUNT(*) FROM usuario WHERE LOWER(correo) = LOWER(?)";
         Long count = jdbcTemplate.queryForObject(sql, Long.class, correo);
         return count != null && count > 0;
     }
@@ -80,5 +89,19 @@ public class UsuarioRepository implements UsuarioDAO {
         String sql = "SELECT COUNT(*) FROM usuario WHERE documento = ?";
         Long count = jdbcTemplate.queryForObject(sql, Long.class, documento);
         return count != null && count > 0;
+    }
+
+    @Override
+    public boolean datosDuplicadosEnOtroUsuario(Long idUsuario, String correo, String documento) {
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM usuario WHERE id_usuario <> ? "
+                + "AND (LOWER(correo) = LOWER(?) OR documento = ?)", Integer.class, idUsuario, correo, documento);
+        return count != null && count > 0;
+    }
+
+    @Override
+    public int actualizarDatos(Long idUsuario, Usuario datos) {
+        return jdbcTemplate.update("UPDATE usuario SET nombres=?, apellidos=?, documento=?, telefono=?, correo=? "
+                + "WHERE id_usuario=? AND rol='CLIENTE'", datos.getNombres(), datos.getApellidos(),
+                datos.getDocumento(), datos.getTelefono(), datos.getCorreo(), idUsuario);
     }
 }

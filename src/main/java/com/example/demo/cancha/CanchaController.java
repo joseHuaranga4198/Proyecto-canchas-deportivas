@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import com.example.demo.categoria.Categoria;
 import com.example.demo.categoria.CategoriaService;
@@ -49,34 +52,45 @@ public class CanchaController {
                                 @RequestParam("idCategoria") Long idCategoria,
                                 @RequestParam("precioHora") BigDecimal precioHora,
                                 @RequestParam("caracteristicas") String caracteristicas,
-                                @RequestParam("estado") String estado) {
+                                @RequestParam("estado") String estado, Model model) {
 
         Categoria cat = categoriaService.obtenerPorId(idCategoria);
         Cancha cancha = (idCancha != null) ? canchaService.obtenerPorId(idCancha) : new Cancha();
+        if (cancha == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la cancha.");
         cancha.setNombre(nombre);
         cancha.setCategoria(cat);
         cancha.setPrecioHora(precioHora);
         cancha.setCaracteristicas(caracteristicas);
         cancha.setEstado(estado);
 
-        if (idCancha == null) {
-            canchaService.guardar(cancha);
-        } else {
-            canchaService.actualizar(cancha);
+        try {
+            if (idCancha == null) canchaService.guardar(cancha);
+            else canchaService.actualizar(cancha);
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("cancha", cancha);
+            model.addAttribute("categorias", categoriaService.listarActivas());
+            return "cancha/formulario";
         }
         return "redirect:/canchas/admin";
     }
 
     @GetMapping("/admin/editar/{id}")
     public String editarCancha(@PathVariable("id") Long id, Model model) {
-        model.addAttribute("cancha", canchaService.obtenerPorId(id));
+        Cancha cancha = canchaService.obtenerPorId(id);
+        if (cancha == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la cancha.");
+        model.addAttribute("cancha", cancha);
         model.addAttribute("categorias", categoriaService.listarActivas());
         return "cancha/formulario";
     }
 
     @PostMapping("/admin/estado/{id}")
-    public String cambiarEstado(@PathVariable("id") Long id, @RequestParam("estado") String estado) {
-        canchaService.cambiarEstado(id, estado);
+    public String cambiarEstado(@PathVariable("id") Long id, @RequestParam("estado") String estado, RedirectAttributes redirect) {
+        try {
+            canchaService.cambiarEstado(id, estado);
+        } catch (IllegalArgumentException ex) {
+            redirect.addFlashAttribute("error", ex.getMessage());
+        }
         return "redirect:/canchas/admin";
     }
 }

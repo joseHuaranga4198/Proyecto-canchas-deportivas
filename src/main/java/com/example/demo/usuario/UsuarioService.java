@@ -13,4 +13,6 @@ public interface UsuarioService {
     Usuario obtenerPorId(Long idUsuario);
 
     void alternarBloqueo(Long idUsuario);
+
+    void actualizarCliente(Long idUsuario, Usuario datos);
 }

@@ -1,0 +1,13 @@
+<%@ page pageEncoding="UTF-8" %>
+<dialog id="cancelar-reserva" class="cancel-dialog" aria-labelledby="cancelar-titulo"
+        aria-describedby="cancelar-resumen cancelar-aviso">
+  <h2 id="cancelar-titulo">¿Cancelar esta reserva?</h2>
+  <p id="cancelar-resumen" class="cancel-dialog-summary"></p>
+  <p id="cancelar-aviso">Si confirmas, el horario quedará libre y se registrará la devolución simulada. La cancelación es definitiva.</p>
+  <form method="post" class="cancel-dialog-actions">
+    <input type="hidden" name="_csrf" value="${csrfToken}">
+    <button type="button" class="button secondary" autofocus>Conservar reserva</button>
+    <button type="submit" class="button danger">Confirmar cancelación</button>
+  </form>
+</dialog>
+<script src="<c:url value='/js/cancelar-reserva.js'/>" defer></script>

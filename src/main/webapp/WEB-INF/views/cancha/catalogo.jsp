@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Catálogo de Canchas Deportivas</title>
     <link rel="stylesheet" href="<c:url value='/css/menu.css'/>">
     <style>
@@ -19,58 +19,33 @@
         .desc { color: #64748b; font-size: 0.95rem; line-height: 1.4; min-height: 2.8rem; }
         .precio { font-size: 1.35rem; font-weight: 700; color: #16a34a; margin: 0.8rem 0; }
         .btn-group { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-        .btn-reservar { flex: 1; text-align: center; text-decoration: none; background: #2563eb; color: #fff; padding: 0.65rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem; }
-        .btn-reservar:hover { background: #1d4ed8; }
-        .btn-horarios { text-align: center; text-decoration: none; background: #f1f5f9; color: #334155; padding: 0.65rem 0.8rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem; border: 1px solid #cbd5e1; }
-        .btn-horarios:hover { background: #e2e8f0; }
     </style>
+<link rel="stylesheet" href="<c:url value='/css/navegacion.css'/>">
+  <link rel="stylesheet" href="<c:url value='/css/botones.css'/>">
 </head>
 <body>
 
-    <header class="navbar">
-        <div style="font-weight: bold; font-size: 1.2rem;">⚽ Reserva de Canchas</div>
-        <nav>
-            <a href="<c:url value='/'/>">Inicio</a>
-            <a href="<c:url value='/publicidad'/>">Publicidad</a>
-            <a href="<c:url value='/contacto'/>">Contacto</a>
-            <a href="<c:url value='/canchas/catalogo'/>">Catálogo</a>
-            <a href="<c:url value='/reservas/disponibilidad'/>">Ver Horarios</a>
-            <c:choose>
-                <c:when test="${not empty sessionScope.usuarioLogueado}">
-                    <c:if test="${sessionScope.usuarioLogueado.rol eq 'ADMINISTRADOR'}">
-                        <a href="<c:url value='/admin/panel'/>" style="color: #facc15;">Panel Admin</a>
-                    </c:if>
-                    <c:if test="${sessionScope.usuarioLogueado.rol eq 'CLIENTE'}">
-                        <a href="<c:url value='/reservas/mis-reservas'/>">Mis Reservas</a>
-                    </c:if>
-                    <a href="<c:url value='/usuario/logout'/>" style="color: #ef4444;">Salir (${sessionScope.usuarioLogueado.nombres})</a>
-                </c:when>
-                <c:otherwise>
-                    <a href="<c:url value='/usuario/login'/>">Iniciar Sesión</a>
-                    <a href="<c:url value='/usuario/registro'/>">Registrarse</a>
-                    <a href="${pageContext.request.contextPath}/usuario/login" target="_blank" rel="noopener">Abrir otra sesión</a>
-                </c:otherwise>
-            </c:choose>
-        </nav>
-    </header>
+    <%@ include file="/WEB-INF/views/comun/cabecera.jspf" %>
 
     <main class="catalogo-container">
         <h2>Catálogo de Canchas Deportivas</h2>
         <p style="color: #475569;">Explora los espacios disponibles, consulta la disponibilidad en tiempo real y reserva tu turno al instante.</p>
 
-        <div class="grid-canchas">
-            <c:forEach var="c" items="${canchas}">
+        <c:if test="${empty canchas}"><div style="padding:32px;background:white;border-radius:12px;margin:24px 0"><h3>Pronto tendremos espacios para ti</h3><p>No hay canchas activas disponibles en este momento.</p></div></c:if>
+<div class="grid-canchas">
+            <c:if test="${not empty error}"><p role="alert" style="color:#991b1b;background:#fee2e2;padding:1rem;"><c:out value="${error}"/></p></c:if>
+<c:forEach var="c" items="${canchas}">
                 <article class="card-cancha">
                     <div>
-                        <span class="badge">${c.categoria.nombre}</span>
-                        <h3>${c.nombre}</h3>
-                        <p class="desc">${c.caracteristicas}</p>
+                        <span class="badge"><c:out value='${c.categoria.nombre}'/></span>
+                        <h3><c:out value='${c.nombre}'/></h3>
+                        <p class="desc"><c:out value='${c.caracteristicas}'/></p>
                     </div>
                     <div>
                         <div class="precio">S/ ${c.precioHora} <span style="font-size: 0.85rem; color: #64748b; font-weight: normal;">/ hora</span></div>
                         <div class="btn-group">
-                            <a href="<c:url value='/reservas/disponibilidad?canchaId=${c.idCancha}'/>" class="btn-horarios">Horarios</a>
-                            <a href="<c:url value='/reservas/nueva?canchaId=${c.idCancha}'/>" class="btn-reservar">Reservar Turno</a>
+                            <a href="<c:url value='/reservas/disponibilidad?canchaId=${c.idCancha}'/>" class="button secondary">Horarios</a>
+                            <a href="<c:url value='/reservas/nueva?canchaId=${c.idCancha}'/>" class="button primary">Reservar Turno</a>
                         </div>
                     </div>
                 </article>

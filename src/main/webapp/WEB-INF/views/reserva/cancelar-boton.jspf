@@ -1,0 +1,6 @@
+<%@ page pageEncoding="UTF-8" %>
+<button type="button" class="button danger small" disabled aria-haspopup="dialog"
+        data-cancelar-url="<c:out value='${cancelarUrl}'/>"
+        data-reserva="#<c:out value='${reserva.idReserva}'/> · <c:out value='${reserva.cancha.nombre}'/> · <c:out value='${reserva.fecha}'/> · <c:out value='${reserva.horaInicio}'/>–<c:out value='${reserva.horaFin}'/>">
+  Cancelar
+</button>

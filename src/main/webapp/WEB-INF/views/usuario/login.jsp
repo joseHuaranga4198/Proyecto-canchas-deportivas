@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Iniciar Sesión - Canchas Deportivas</title>
     <link rel="stylesheet" href="<c:url value='/css/menu.css'/>">
     <style>
@@ -13,15 +13,16 @@
         .form-group { margin-bottom: 1.2rem; }
         .form-group label { display: block; margin-bottom: 0.4rem; font-weight: bold; color: #34495e; }
         .form-group input { width: 100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .btn-submit { width: 100%; padding: 0.75rem; background-color: #27ae60; color: white; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; font-weight: bold; }
-        .btn-submit:hover { background-color: #219150; }
         .alert-error { background-color: #f8d7da; color: #721c24; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; text-align: center; }
         .alert-success { background-color: #d4edda; color: #155724; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; text-align: center; }
         .links { text-align: center; margin-top: 1rem; font-size: 0.9rem; }
         .links a { color: #2980b9; text-decoration: none; }
     </style>
+<link rel="stylesheet" href="<c:url value='/css/navegacion.css'/>">
+  <link rel="stylesheet" href="<c:url value='/css/botones.css'/>">
 </head>
 <body>
+<%@ include file="/WEB-INF/views/comun/cabecera.jspf" %>
 
 <div class="login-card">
     <h2>Acceso al Sistema</h2>
@@ -35,6 +36,7 @@
 
     <!-- FORMULARIO CON ATRIBUTOS NAME ESTANDARIZADOS -->
     <form action="<c:url value='/usuario/login'/>" method="post">
+<input type="hidden" name="_csrf" value="${csrfToken}">
         <div class="form-group">
             <label for="correo">Correo Electrónico:</label>
             <input type="email" id="correo" name="correo" required placeholder="Tu correo electrónico" autocomplete="username">
@@ -45,14 +47,14 @@
             <input type="password" id="contrasena" name="contrasena" required placeholder="••••••••" autocomplete="current-password">
         </div>
 
-        <button type="submit" class="btn-submit">Ingresar</button>
+        <button type="submit" class="button primary full">Ingresar</button>
     </form>
 
     <div class="links">
         <p><a href="<c:url value='/'/>">Inicio</a> · <a href="<c:url value='/publicidad'/>">Publicidad</a> · <a href="<c:url value='/contacto'/>">Contacto</a></p>
         <p>¿No tienes cuenta? <a href="<c:url value='/usuario/registro'/>">Regístrate aquí</a></p>
         <p><a href="<c:url value='/canchas/catalogo'/>">Volver al catálogo</a></p>
-        <p><a href="${pageContext.request.contextPath}/usuario/login" target="_blank" rel="noopener">Abrir otra sesión</a></p>
+        
     </div>
 </div>
 

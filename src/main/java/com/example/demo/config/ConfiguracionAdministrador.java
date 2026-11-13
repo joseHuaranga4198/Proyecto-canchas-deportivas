@@ -4,24 +4,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Crea el primer administrador solo si aún no existe y se configuraron explícitamente
- * todas las variables de entorno ADMIN_*.
+ * Cuenta fija de la demostración académica. No reemplaza administradores existentes.
  */
 @Component
 public class ConfiguracionAdministrador implements ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(ConfiguracionAdministrador.class);
+    public static final String CORREO = "admin@canchas.pe";
+    public static final String CLAVE = "admin123";
 
     private final JdbcTemplate jdbc;
-    private final Environment environment;
 
-    public ConfiguracionAdministrador(JdbcTemplate jdbc, Environment environment) {
+    public ConfiguracionAdministrador(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
-        this.environment = environment;
     }
 
     @Override
@@ -29,21 +27,18 @@ public class ConfiguracionAdministrador implements ApplicationRunner {
         Integer admins = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM usuario WHERE UPPER(rol) = 'ADMINISTRADOR'", Integer.class);
         if (admins != null && admins > 0) {
+            migrarClaves();
             return;
         }
 
-        String correo = required("ADMIN_CORREO");
-        String clave = required("ADMIN_CLAVE");
-        String documento = required("ADMIN_DOCUMENTO");
-        String nombres = required("ADMIN_NOMBRES");
-        String apellidos = required("ADMIN_APELLIDOS");
-        if (correo == null || clave == null || documento == null || nombres == null || apellidos == null) {
-            logger.warn("No hay administrador configurado. Configure ADMIN_CORREO, ADMIN_CLAVE, ADMIN_DOCUMENTO, ADMIN_NOMBRES y ADMIN_APELLIDOS, y reinicie la aplicación.");
-            return;
-        }
+        String correo = CORREO;
+        String clave = CLAVE;
+        String documento = "00000001";
+        String nombres = "Administrador";
+        String apellidos = "CanchaYa";
 
         Integer correoUsado = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM usuario WHERE correo = ?", Integer.class, correo);
+                "SELECT COUNT(*) FROM usuario WHERE LOWER(correo) = LOWER(?)", Integer.class, correo);
         Integer documentoUsado = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM usuario WHERE documento = ?", Integer.class, documento);
         if ((correoUsado != null && correoUsado > 0) || (documentoUsado != null && documentoUsado > 0)) {
@@ -52,14 +47,18 @@ public class ConfiguracionAdministrador implements ApplicationRunner {
 
         jdbc.update("INSERT INTO usuario (nombres, apellidos, documento, correo, contrasena, rol, estado) "
                         + "VALUES (?, ?, ?, ?, ?, 'ADMINISTRADOR', 'ACTIVO')",
-                nombres, apellidos, documento, correo, clave);
-        logger.info("Se creó el primer administrador usando las variables ADMIN_* configuradas.");
+                nombres, apellidos, documento, correo, Claves.hash(clave));
+        migrarClaves();
+        logger.info("Se creó el administrador de demostración: {}", CORREO);
     }
 
-    private String required(String key) {
-        String value = environment.getProperty(key);
-        return value == null || value.isBlank() ? null : value.trim();
+    private void migrarClaves() {
+        jdbc.query("SELECT id_usuario, contrasena FROM usuario", (org.springframework.jdbc.core.RowCallbackHandler) rs -> {
+            String clave = rs.getString("contrasena");
+            if (!Claves.esHash(clave)) jdbc.update("UPDATE usuario SET contrasena=? WHERE id_usuario=?", Claves.hash(clave), rs.getLong("id_usuario"));
+        });
     }
+
 }
 
 

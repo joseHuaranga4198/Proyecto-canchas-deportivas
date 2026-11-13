@@ -1,0 +1,77 @@
+<%@ page pageEncoding="UTF-8" %>
+<%@ taglib prefix="nav" uri="jakarta.tags.core" %>
+<%@ taglib prefix="navfn" uri="jakarta.tags.functions" %>
+<nav:set var="navRutaActual" value="${requestScope['org.springframework.web.servlet.HandlerMapping.pathWithinHandlerMapping']}"/>
+<header class="cy-header">
+  <a class="cy-brand" href="<nav:url value='/'/>" aria-label="CanchaYa, ir al inicio"><span aria-hidden="true">⚽</span> CanchaYa</a>
+  <nav class="cy-nav" aria-label="Navegación principal">
+    <nav:choose>
+      <nav:when test="${sessionScope.usuarioLogueado.rol eq 'ADMINISTRADOR'}">
+        <a href="<nav:url value='/admin/panel'/>"
+           <nav:if test="${navRutaActual eq '/admin/panel'}">aria-current="location"</nav:if>>Panel</a>
+        <a href="<nav:url value='/canchas/admin'/>"
+           <nav:if test="${navRutaActual eq '/canchas/admin' or navfn:startsWith(navRutaActual, '/canchas/admin/')}">aria-current="location"</nav:if>>Canchas</a>
+        <a href="<nav:url value='/admin/categorias'/>"
+           <nav:if test="${navRutaActual eq '/admin/categorias' or navfn:startsWith(navRutaActual, '/admin/categorias/')}">aria-current="location"</nav:if>>Categorías</a>
+        <a href="<nav:url value='/usuario/admin/lista'/>"
+           <nav:if test="${navRutaActual eq '/usuario/admin/lista' or navfn:startsWith(navRutaActual, '/usuario/admin/')}">aria-current="location"</nav:if>>Clientes</a>
+        <a href="<nav:url value='/reservas/admin'/>"
+           <nav:if test="${navRutaActual eq '/reservas/admin' or navfn:startsWith(navRutaActual, '/reservas/admin/')}">aria-current="location"</nav:if>>Reservas</a>
+        <a href="<nav:url value='/admin/disponibilidad'/>"
+           <nav:if test="${navRutaActual eq '/admin/disponibilidad'}">aria-current="location"</nav:if>>Mantenimiento</a>
+        <a href="<nav:url value='/admin/pagos'/>"
+           <nav:if test="${navRutaActual eq '/admin/pagos'}">aria-current="location"</nav:if>>Pagos</a>
+        <a href="<nav:url value='/admin/metricas'/>"
+           <nav:if test="${navRutaActual eq '/admin/metricas'}">aria-current="location"</nav:if>>Métricas</a>
+      </nav:when>
+      <nav:when test="${sessionScope.usuarioLogueado.rol eq 'CLIENTE'}">
+        <a href="<nav:url value='/canchas/catalogo'/>"
+           <nav:if test="${navRutaActual eq '/canchas/catalogo'}">aria-current="location"</nav:if>>Canchas</a>
+        <a href="<nav:url value='/reservas/disponibilidad'/>"
+           <nav:if test="${navRutaActual eq '/reservas/disponibilidad' or navRutaActual eq '/reservas/nueva' or navRutaActual eq '/reservas/pago'}">aria-current="location"</nav:if>>Disponibilidad</a>
+        <a href="<nav:url value='/reservas/mis-reservas'/>"
+           <nav:if test="${navRutaActual eq '/reservas/mis-reservas' or navfn:startsWith(navRutaActual, '/reservas/mis-reservas/')}">aria-current="location"</nav:if>>Mis reservas</a>
+        <a href="<nav:url value='/usuario/perfil'/>"
+           <nav:if test="${navRutaActual eq '/usuario/perfil'}">aria-current="location"</nav:if>>Mi perfil</a>
+      </nav:when>
+      <nav:otherwise>
+        <a href="<nav:url value='/'/>"
+           <nav:if test="${navRutaActual eq '/'}">aria-current="location"</nav:if>>Inicio</a>
+        <a href="<nav:url value='/nosotros'/>"
+           <nav:if test="${navRutaActual eq '/nosotros'}">aria-current="location"</nav:if>>Sobre nosotros</a>
+        <a href="<nav:url value='/publicidad'/>"
+           <nav:if test="${navRutaActual eq '/publicidad'}">aria-current="location"</nav:if>>Publicidad</a>
+        <a href="<nav:url value='/contacto'/>"
+           <nav:if test="${navRutaActual eq '/contacto'}">aria-current="location"</nav:if>>Contacto</a>
+        <a href="<nav:url value='/canchas/catalogo'/>"
+           <nav:if test="${navRutaActual eq '/canchas/catalogo'}">aria-current="location"</nav:if>>Canchas</a>
+        <a href="<nav:url value='/usuario/login'/>"
+           <nav:if test="${navRutaActual eq '/usuario/login'}">aria-current="location"</nav:if>>Iniciar sesión</a>
+        <a href="<nav:url value='/usuario/registro'/>"
+           <nav:if test="${navRutaActual eq '/usuario/registro'}">aria-current="location"</nav:if>>Crear cuenta</a>
+      </nav:otherwise>
+    </nav:choose>
+  </nav>
+  <nav:if test="${not empty sessionScope.usuarioLogueado}">
+    <div class="cy-account" role="group" aria-label="Cuenta">
+      <span class="cy-sesion" role="group" aria-label="Sesión activa">
+        <span><nav:out value="${sessionScope.usuarioLogueado.nombres}"/></span>
+        <span aria-hidden="true">·</span>
+        <span class="cy-rol">
+          <nav:choose>
+            <nav:when test="${sessionScope.usuarioLogueado.rol eq 'ADMINISTRADOR'}">Administrador</nav:when>
+            <nav:otherwise>Cliente</nav:otherwise>
+          </nav:choose>
+        </span>
+      </span>
+      <div class="cy-account-actions">
+        <a class="button secondary small" href="${pageContext.request.contextPath}/usuario/login"
+           target="_blank" rel="noopener noreferrer" title="Abrir un acceso independiente en otra pestaña">Abrir otra sesión ↗</a>
+        <form class="cy-logout-form" action="<nav:url value='/usuario/logout'/>" method="post">
+          <input type="hidden" name="_csrf" value="${csrfToken}">
+          <button class="button danger small" type="submit">Cerrar sesión</button>
+        </form>
+      </div>
+    </div>
+  </nav:if>
+</header>

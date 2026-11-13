@@ -3,8 +3,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Generar Reserva - ${cancha.nombre}</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Generar Reserva - <c:out value='${cancha.nombre}'/></title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 2rem 1rem; }
         .form-card { max-width: 500px; margin: auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
@@ -14,18 +14,18 @@
         .campo label { display: block; font-weight: bold; margin-bottom: 0.4rem; color: #334155; }
         .campo input, .campo select { width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
         .alert-error { background-color: #fee2e2; color: #991b1b; padding: 0.75rem; border-radius: 4px; margin-bottom: 1.2rem; border: 1px solid #f87171; }
-        .btn-confirmar { width: 100%; background: #16a34a; color: white; padding: 0.75rem; border: none; border-radius: 4px; font-weight: bold; font-size: 1rem; cursor: pointer; }
-        .btn-confirmar:hover { background: #15803d; }
-        .btn-cancelar { display: block; text-align: center; margin-top: 1rem; color: #64748b; text-decoration: none; }
     </style>
+<link rel="stylesheet" href="<c:url value='/css/navegacion.css'/>">
+  <link rel="stylesheet" href="<c:url value='/css/botones.css'/>">
 </head>
 <body>
+<%@ include file="/WEB-INF/views/comun/cabecera.jspf" %>
 
 <div class="form-card">
-    <h2>Reservar Espacio Deportivo</h2>
+    <h2>Reservar Espacio Deportivo</h2><p>Atención de 08:00 a 22:00. Reservas en bloques de una hora.</p>
 
     <div class="detalle-cancha">
-        <strong>${cancha.nombre}</strong><br>
+        <strong><c:out value='${cancha.nombre}'/></strong><br>
         <span style="color: #64748b;">Tarifa:</span> S/ ${cancha.precioHora} por hora
     </div>
 
@@ -34,57 +34,58 @@
     </c:if>
 
     <form action="<c:url value='/reservas/guardar'/>" method="post">
+<input type="hidden" name="_csrf" value="${csrfToken}">
         <input type="hidden" name="canchaId" value="${cancha.idCancha}">
 
         <div class="campo">
             <label for="fecha">Fecha de Reserva:</label>
-            <input type="date" id="fecha" name="fecha" min="${fechaMinima}" required>
+            <input type="date" id="fecha" name="fecha" value="${fechaElegida}" min="${fechaMinima}" required>
         </div>
 
         <div class="campo">
             <label for="horaInicio">Hora de Inicio:</label>
             <select id="horaInicio" name="horaInicio" required>
-                <option value="08:00">08:00 AM</option>
-                <option value="09:00">09:00 AM</option>
-                <option value="10:00">10:00 AM</option>
-                <option value="11:00">11:00 AM</option>
-                <option value="12:00">12:00 PM</option>
-                <option value="13:00">01:00 PM</option>
-                <option value="14:00">02:00 PM</option>
-                <option value="15:00">03:00 PM</option>
-                <option value="16:00">04:00 PM</option>
-                <option value="17:00">05:00 PM</option>
-                <option value="18:00">06:00 PM</option>
-                <option value="19:00">07:00 PM</option>
-                <option value="20:00">08:00 PM</option>
-                <option value="21:00">09:00 PM</option>
-                <option value="22:00">10:00 PM</option>
+                <option value="08:00" ${inicioElegido.toString() eq '08:00' ? 'selected' : ''}>08:00 AM</option>
+                <option value="09:00" ${inicioElegido.toString() eq '09:00' ? 'selected' : ''}>09:00 AM</option>
+                <option value="10:00" ${inicioElegido.toString() eq '10:00' ? 'selected' : ''}>10:00 AM</option>
+                <option value="11:00" ${inicioElegido.toString() eq '11:00' ? 'selected' : ''}>11:00 AM</option>
+                <option value="12:00" ${inicioElegido.toString() eq '12:00' ? 'selected' : ''}>12:00 PM</option>
+                <option value="13:00" ${inicioElegido.toString() eq '13:00' ? 'selected' : ''}>01:00 PM</option>
+                <option value="14:00" ${inicioElegido.toString() eq '14:00' ? 'selected' : ''}>02:00 PM</option>
+                <option value="15:00" ${inicioElegido.toString() eq '15:00' ? 'selected' : ''}>03:00 PM</option>
+                <option value="16:00" ${inicioElegido.toString() eq '16:00' ? 'selected' : ''}>04:00 PM</option>
+                <option value="17:00" ${inicioElegido.toString() eq '17:00' ? 'selected' : ''}>05:00 PM</option>
+                <option value="18:00" ${inicioElegido.toString() eq '18:00' ? 'selected' : ''}>06:00 PM</option>
+                <option value="19:00" ${inicioElegido.toString() eq '19:00' ? 'selected' : ''}>07:00 PM</option>
+                <option value="20:00" ${inicioElegido.toString() eq '20:00' ? 'selected' : ''}>08:00 PM</option>
+                <option value="21:00" ${inicioElegido.toString() eq '21:00' ? 'selected' : ''}>09:00 PM</option>
+                
             </select>
         </div>
 
         <div class="campo">
             <label for="horaFin">Hora de Fin:</label>
             <select id="horaFin" name="horaFin" required>
-                <option value="09:00">09:00 AM</option>
-                <option value="10:00">10:00 AM</option>
-                <option value="11:00">11:00 AM</option>
-                <option value="12:00">12:00 PM</option>
-                <option value="13:00">01:00 PM</option>
-                <option value="14:00">02:00 PM</option>
-                <option value="15:00">03:00 PM</option>
-                <option value="16:00">04:00 PM</option>
-                <option value="17:00">05:00 PM</option>
-                <option value="18:00">06:00 PM</option>
-                <option value="19:00">07:00 PM</option>
-                <option value="20:00">08:00 PM</option>
-                <option value="21:00">09:00 PM</option>
-                <option value="22:00">10:00 PM</option>
-                <option value="23:00">11:00 PM</option>
+                <option value="09:00" ${finElegido.toString() eq '09:00' ? 'selected' : ''}>09:00 AM</option>
+                <option value="10:00" ${finElegido.toString() eq '10:00' ? 'selected' : ''}>10:00 AM</option>
+                <option value="11:00" ${finElegido.toString() eq '11:00' ? 'selected' : ''}>11:00 AM</option>
+                <option value="12:00" ${finElegido.toString() eq '12:00' ? 'selected' : ''}>12:00 PM</option>
+                <option value="13:00" ${finElegido.toString() eq '13:00' ? 'selected' : ''}>01:00 PM</option>
+                <option value="14:00" ${finElegido.toString() eq '14:00' ? 'selected' : ''}>02:00 PM</option>
+                <option value="15:00" ${finElegido.toString() eq '15:00' ? 'selected' : ''}>03:00 PM</option>
+                <option value="16:00" ${finElegido.toString() eq '16:00' ? 'selected' : ''}>04:00 PM</option>
+                <option value="17:00" ${finElegido.toString() eq '17:00' ? 'selected' : ''}>05:00 PM</option>
+                <option value="18:00" ${finElegido.toString() eq '18:00' ? 'selected' : ''}>06:00 PM</option>
+                <option value="19:00" ${finElegido.toString() eq '19:00' ? 'selected' : ''}>07:00 PM</option>
+                <option value="20:00" ${finElegido.toString() eq '20:00' ? 'selected' : ''}>08:00 PM</option>
+                <option value="21:00" ${finElegido.toString() eq '21:00' ? 'selected' : ''}>09:00 PM</option>
+                <option value="22:00" ${finElegido.toString() eq '22:00' ? 'selected' : ''}>10:00 PM</option>
+                
             </select>
         </div>
 
-        <button type="submit" class="btn-confirmar">Continuar al Pago</button>
-        <a href="<c:url value='/canchas/catalogo'/>" class="btn-cancelar">Cancelar y regresar</a>
+        <button type="submit" class="button primary full">Continuar al Pago</button>
+        <a href="<c:url value='/canchas/catalogo'/>" class="button secondary full">Cancelar y regresar</a>
     </form>
 </div>
 

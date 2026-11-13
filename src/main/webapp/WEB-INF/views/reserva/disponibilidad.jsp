@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Consulta de Disponibilidad</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; color: #1e293b; }
@@ -16,8 +16,6 @@
         .filter-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 0.35rem; font-size: 0.9rem; color: #475569; }
         select, input[type="date"] { width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9rem; }
-        .btn-buscar { background: #2563eb; color: white; border: none; padding: 0.65rem 1.5rem; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .btn-buscar:hover { background: #1d4ed8; }
         .info-cancha { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; }
         .info-cancha h3 { margin: 0 0 0.3rem 0; color: #1e40af; }
         .info-cancha p { margin: 0; color: #3b82f6; font-size: 0.9rem; }
@@ -26,23 +24,15 @@
         th { background: #f1f5f9; color: #475569; }
         .badge-ocupado { background: #fee2e2; color: #b91c1c; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
         .badge-disponible { background: #dcfce7; color: #15803d; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
-        .btn-reservar-ahora { background: #16a34a; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9rem; display: inline-block; }
-        .btn-reservar-ahora:hover { background: #15803d; }
     </style>
+<link rel="stylesheet" href="<c:url value='/css/navegacion.css'/>">
+<link rel="stylesheet" href="<c:url value='/css/sistema.css'/>">  <link rel="stylesheet" href="<c:url value='/css/botones.css'/>">
 </head>
 <body>
-    <div class="navbar">
-        <h2>Reserva de Canchas Deportivas</h2>
-        <div class="nav-links">
-            <a href="<c:url value='/canchas/catalogo'/>">Catálogo</a>
-            <a href="<c:url value='/reservas/disponibilidad'/>">Disponibilidad</a>
-            <a href="<c:url value='/reservas/mis-reservas'/>">Mis Reservas</a>
-            <a href="<c:url value='/usuario/login'/>">Iniciar Sesión</a>
-        </div>
-    </div>
+    <%@ include file="/WEB-INF/views/comun/cabecera.jspf" %>
 
     <div class="container">
-        <h2>Consulta de Disponibilidad de Canchas (I04)</h2>
+        <h2>Consulta de Disponibilidad de Canchas</h2>
 
         <div class="filter-card">
             <form action="<c:url value='/reservas/disponibilidad'/>" method="get" class="filter-form">
@@ -51,7 +41,7 @@
                     <select id="canchaId" name="canchaId" required>
                         <c:forEach var="c" items="${canchas}">
                             <option value="${c.idCancha}" ${c.idCancha == canchaSeleccionada.idCancha ? 'selected' : ''}>
-                                ${c.nombre} (${c.categoria.nombre}) - S/ ${c.precioHora}/h
+                                <c:out value='${c.nombre}'/> (<c:out value='${c.categoria.nombre}'/>) - S/ ${c.precioHora}/h
                             </option>
                         </c:forEach>
                     </select>
@@ -62,50 +52,24 @@
                     <input type="date" id="fecha" name="fecha" value="${fechaSeleccionada}" required>
                 </div>
 
-                <button type="submit" class="btn-buscar">Consultar</button>
+                <button type="submit" class="button primary">Consultar</button>
             </form>
         </div>
 
-        <c:if test="${not empty canchaSeleccionada}">
+        <c:if test="${not empty error}"><p role="alert" style="color:#991b1b;background:#fee2e2;padding:1rem;"><c:out value="${error}"/></p></c:if>
+<c:if test="${not empty canchaSeleccionada}">
             <div class="info-cancha">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h3>${canchaSeleccionada.nombre}</h3>
-                        <p><strong>Disciplina:</strong> ${canchaSeleccionada.categoria.nombre} | <strong>Tarifa:</strong> S/ ${canchaSeleccionada.precioHora} por hora</p>
+                        <h3><c:out value='${canchaSeleccionada.nombre}'/></h3>
+                        <p><strong>Disciplina:</strong> <c:out value='${canchaSeleccionada.categoria.nombre}'/> | <strong>Tarifa:</strong> S/ ${canchaSeleccionada.precioHora} por hora</p>
                     </div>
-                    <a href="<c:url value='/reservas/nueva?canchaId=${canchaSeleccionada.idCancha}'/>" class="btn-reservar-ahora">+ Reservar Turno</a>
+                    <a href="<c:url value='/reservas/nueva?canchaId=${canchaSeleccionada.idCancha}'/>" class="button primary">+ Reservar Turno</a>
                 </div>
             </div>
 
-            <h3>Horarios Ocupados para el ${fechaSeleccionada}</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Horario Reservado</th>
-                        <th>Estado de la Cancha</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <c:choose>
-                        <c:when test="${not empty reservasOcupadas}">
-                            <c:forEach var="r" items="${reservasOcupadas}">
-                                <tr>
-                                    <td><strong>${r.horaInicio} - ${r.horaFin}</strong></td>
-                                    <td><span class="badge-ocupado">HORARIO OCUPADO</span></td>
-                                </tr>
-                            </c:forEach>
-                        </c:when>
-                        <c:otherwise>
-                            <tr>
-                                <td colspan="2" style="text-align: center; color: #16a34a; padding: 1.5rem;">
-                                    <span class="badge-disponible">DISPONIBLE TODO EL DÍA</span>
-                                    <p style="margin: 0.5rem 0 0 0; color: #64748b;">No hay reservas registradas para esta fecha.</p>
-                                </td>
-                            </tr>
-                        </c:otherwise>
-                    </c:choose>
-                </tbody>
-            </table>
+<h3>Turnos del ${fechaSeleccionada}</h3><p>Atención de 08:00 a 22:00. Cada turno representa una hora.</p>
+<div class="turnos"><c:forEach var="t" items="${turnos}"><article class="turno ${t.estado eq 'Disponible' ? 'libre' : (t.estado eq 'Pasado' ? 'pasado' : 'ocupado')}"><strong>${t.inicio} – ${t.fin}</strong><span><c:out value="${t.estado}"/></span><c:if test="${t.estado eq 'Disponible'}"><c:url var="reservarTurno" value="/reservas/nueva"><c:param name="canchaId" value="${canchaSeleccionada.idCancha}"/><c:param name="fecha" value="${fechaSeleccionada}"/><c:param name="inicio" value="${t.inicio}"/></c:url><a class="button primary small" href="${reservarTurno}">Reservar turno</a></c:if></article></c:forEach></div>
         </c:if>
     </div>
 </body>

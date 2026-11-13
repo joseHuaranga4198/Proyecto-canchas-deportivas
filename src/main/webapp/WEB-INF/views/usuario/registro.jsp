@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Registro de Cliente | Reserva de Canchas</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f1f5f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 1.5rem 0; }
@@ -12,14 +12,15 @@
         .form-group { margin-bottom: 1rem; }
         label { display: block; font-weight: bold; margin-bottom: 0.3rem; color: #475569; font-size: 0.9rem; }
         input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
-        .btn-registro { width: 100%; background: #16a34a; color: white; border: none; padding: 0.75rem; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 0.5rem; }
-        .btn-registro:hover { background: #15803d; }
         .alerta-error { background-color: #fee2e2; color: #b91c1c; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; border: 1px solid #f87171; font-size: 0.9rem; }
         .links { text-align: center; margin-top: 1rem; font-size: 0.9rem; }
         .links a { color: #2563eb; text-decoration: none; }
     </style>
+<link rel="stylesheet" href="<c:url value='/css/navegacion.css'/>">
+  <link rel="stylesheet" href="<c:url value='/css/botones.css'/>">
 </head>
 <body>
+<%@ include file="/WEB-INF/views/comun/cabecera.jspf" %>
     <div class="registro-box">
         <h2>Crear Cuenta de Cliente</h2>
 
@@ -28,6 +29,7 @@
         </c:if>
 
         <form action="<c:url value='/usuario/registro'/>" method="post">
+<input type="hidden" name="_csrf" value="${csrfToken}">
             <div class="form-group">
                 <label for="nombres">Nombres:</label>
                 <input type="text" id="nombres" name="nombres" required>
@@ -58,7 +60,7 @@
                 <input type="text" id="telefono" name="telefono" required>
             </div>
 
-            <button type="submit" class="btn-registro">Completar Registro</button>
+            <button type="submit" class="button primary full">Completar Registro</button>
         </form>
 
         <div class="links">

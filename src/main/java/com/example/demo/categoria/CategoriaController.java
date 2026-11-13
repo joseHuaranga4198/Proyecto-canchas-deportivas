@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 @RequestMapping("/admin/categorias")
@@ -32,28 +35,44 @@ public class CategoriaController {
         }
         model.addAttribute("categorias", categoriaService.listarTodas());
         model.addAttribute("nuevaCategoria", new Categoria());
-        return "admin/categorias";
+        return "categoria/categorias";
     }
 
     @PostMapping("/guardar")
-    public String guardar(@ModelAttribute("nuevaCategoria") Categoria categoria, HttpSession session) {
+    public String guardar(@ModelAttribute("nuevaCategoria") Categoria categoria, HttpSession session, Model model) {
         if (!tienePermisoAdmin(session)) {
             return "redirect:/usuario/login";
         }
-        if (categoria.getIdCategoria() == null) {
-            categoriaService.guardar(categoria);
-        } else {
-            categoriaService.actualizar(categoria);
+        try {
+            if (categoria.getIdCategoria() == null) categoriaService.guardar(categoria);
+            else categoriaService.actualizar(categoria);
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("categorias", categoriaService.listarTodas());
+            return "categoria/categorias";
         }
         return "redirect:/admin/categorias";
     }
 
+    @GetMapping("/editar/{id}")
+    public String editar(@PathVariable Long id, Model model) {
+        Categoria categoria = categoriaService.obtenerPorId(id);
+        if (categoria == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        model.addAttribute("nuevaCategoria", categoria);
+        model.addAttribute("categorias", categoriaService.listarTodas());
+        return "categoria/categorias";
+    }
+
     @PostMapping("/eliminar/{id}")
-    public String eliminar(@PathVariable("id") Long id, HttpSession session) {
+    public String eliminar(@PathVariable("id") Long id, HttpSession session, RedirectAttributes redirect) {
         if (!tienePermisoAdmin(session)) {
             return "redirect:/usuario/login";
         }
-        categoriaService.eliminar(id);
+        try {
+            if (!categoriaService.eliminar(id)) redirect.addFlashAttribute("error", "No se puede eliminar una categoría con canchas asociadas.");
+        } catch (IllegalArgumentException ex) {
+            redirect.addFlashAttribute("error", ex.getMessage());
+        }
         return "redirect:/admin/categorias";
     }
 }

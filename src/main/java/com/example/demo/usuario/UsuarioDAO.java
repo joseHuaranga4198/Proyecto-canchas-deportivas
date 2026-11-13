@@ -17,4 +17,8 @@ public interface UsuarioDAO {
     boolean existeCorreo(String correo);
 
     boolean existeDocumento(String documento);
+
+    boolean datosDuplicadosEnOtroUsuario(Long idUsuario, String correo, String documento);
+
+    int actualizarDatos(Long idUsuario, Usuario datos);
 }

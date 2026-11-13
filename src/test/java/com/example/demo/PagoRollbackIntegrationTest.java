@@ -24,12 +24,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.example.demo.reserva.ReservaDAO;
-import com.example.demo.reserva.ReservaF1316Service;
+import com.example.demo.reserva.ReservaService;
 
 @SpringBootTest
 @ActiveProfiles("test")
 class PagoRollbackIntegrationTest {
-    @Autowired private ReservaF1316Service service;
+    @Autowired private ReservaService service;
     @Autowired private JdbcTemplate jdbc;
     @SpyBean private ReservaDAO reservaDao;
 

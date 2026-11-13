@@ -3,8 +3,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Pagar Reserva #${reserva.idReserva}</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Pago de reserva | CanchaYa</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f8fafc; padding: 2rem 1rem; }
         .checkout-box { max-width: 480px; margin: auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.08); }
@@ -12,11 +12,12 @@
         .resumen { background: #f1f5f9; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem; }
         .item-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem; }
         .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.25rem; border-top: 1px solid #cbd5e1; padding-top: 0.75rem; color: #16a34a; }
-        .btn-pagar { width: 100%; background: #0284c7; color: white; border: none; padding: 0.8rem; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; }
-        .btn-pagar:hover { background: #0369a1; }
     </style>
+<link rel="stylesheet" href="<c:url value='/css/navegacion.css'/>">
+  <link rel="stylesheet" href="<c:url value='/css/botones.css'/>">
 </head>
 <body>
+<%@ include file="/WEB-INF/views/comun/cabecera.jspf" %>
 
 <div class="checkout-box">
     <h2>Confirmación de Pago</h2>
@@ -24,14 +25,15 @@
     <c:if test="${not empty error}"><p style="color:#b91c1c;">${error}</p></c:if>
 
     <div class="resumen">
-        <div class="item-row"><span>Cancha:</span><strong>${reserva.cancha.nombre}</strong></div>
+        <div class="item-row"><span>Cancha:</span><strong><c:out value='${reserva.cancha.nombre}'/></strong></div>
         <div class="item-row"><span>Fecha:</span><strong>${reserva.fecha}</strong></div>
         <div class="item-row"><span>Horario:</span><strong>${reserva.horaInicio} - ${reserva.horaFin}</strong></div>
         <div class="total-row"><span>Total a Pagar:</span><span>S/ ${reserva.importe}</span></div>
     </div>
 
     <form action="<c:url value='/reservas/pago/procesar'/>" method="post">
-        <button type="submit" class="btn-pagar">Simular Pago Exitoso</button>
+<input type="hidden" name="_csrf" value="${csrfToken}">
+        <button type="submit" class="button primary full">Simular Pago Exitoso</button>
     </form>
 </div>
 

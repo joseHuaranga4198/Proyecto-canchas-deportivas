@@ -1,5 +1,7 @@
 package com.example.demo.reserva;
 
+import com.example.demo.operacion.Pago;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
@@ -27,9 +29,11 @@ public class ReservaRepository implements ReservaDAO {
             + "LEFT JOIN pago p ON p.id_reserva = r.id_reserva ";
 
     private final JdbcTemplate jdbcTemplate;
+    private final java.time.Clock clock;
 
-    public ReservaRepository(JdbcTemplate jdbcTemplate) {
+    public ReservaRepository(JdbcTemplate jdbcTemplate,java.time.Clock clock) {
         this.jdbcTemplate = jdbcTemplate;
+        this.clock=clock;
     }
 
     private final RowMapper<Reserva> reservaRowMapper = (rs, rowNum) -> {
@@ -91,8 +95,8 @@ public class ReservaRepository implements ReservaDAO {
 
     @Override
     public Long guardar(Reserva reserva) {
-        String sql = "INSERT INTO reserva (id_usuario, id_cancha, fecha, hora_inicio, hora_fin, importe, estado) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO reserva (id_usuario, id_cancha, fecha, hora_inicio, hora_fin, importe, estado,fecha_registro) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement statement = connection.prepareStatement(sql, new String[] { "ID_RESERVA" });
@@ -103,6 +107,7 @@ public class ReservaRepository implements ReservaDAO {
             statement.setTime(5, java.sql.Time.valueOf(reserva.getHoraFin()));
             statement.setBigDecimal(6, reserva.getImporte());
             statement.setString(7, reserva.getEstado());
+            statement.setTimestamp(8,java.sql.Timestamp.valueOf(java.time.LocalDateTime.now(clock)));
             return statement;
         }, keyHolder);
 
@@ -171,7 +176,7 @@ public class ReservaRepository implements ReservaDAO {
 
     @Override
     public int registrarPago(Long idReserva, BigDecimal importe) {
-        return jdbcTemplate.update("INSERT INTO pago (id_reserva, importe, estado) VALUES (?, ?, 'REGISTRADO')",
-                idReserva, importe);
+        return jdbcTemplate.update("INSERT INTO pago (id_reserva, importe, estado,fecha_pago) VALUES (?, ?, 'REGISTRADO',?)",
+                idReserva, importe,java.time.LocalDateTime.now(clock));
     }
 }

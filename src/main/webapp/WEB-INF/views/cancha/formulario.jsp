@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title><c:choose><c:when test="${not empty cancha.idCancha}">Editar Cancha</c:when><c:otherwise>Nueva Cancha</c:otherwise></c:choose></title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 2rem; }
@@ -13,12 +13,12 @@
         label { display: block; font-weight: bold; margin-bottom: 0.4rem; color: #475569; font-size: 0.9rem; }
         input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 0.65rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: 0.95rem; }
         textarea { resize: vertical; min-height: 70px; }
-        .btn-submit { width: 100%; background: #2563eb; color: white; border: none; padding: 0.75rem; border-radius: 4px; font-weight: bold; font-size: 1rem; cursor: pointer; }
-        .btn-submit:hover { background: #1d4ed8; }
-        .btn-cancelar { display: block; text-align: center; margin-top: 1rem; color: #64748b; text-decoration: none; font-size: 0.9rem; }
     </style>
+<link rel="stylesheet" href="<c:url value='/css/navegacion.css'/>">
+  <link rel="stylesheet" href="<c:url value='/css/botones.css'/>">
 </head>
 <body>
+<%@ include file="/WEB-INF/views/comun/cabecera.jspf" %>
     <div class="form-card">
         <h2>
             <c:choose>
@@ -27,12 +27,14 @@
             </c:choose>
         </h2>
 
-        <form action="<c:url value='/canchas/admin/guardar'/>" method="post">
+        <c:if test="${not empty error}"><p role="alert" style="color:#991b1b;background:#fee2e2;padding:1rem;"><c:out value="${error}"/></p></c:if>
+<form action="<c:url value='/canchas/admin/guardar'/>" method="post">
+<input type="hidden" name="_csrf" value="${csrfToken}">
             <input type="hidden" name="idCancha" value="${cancha.idCancha}">
 
             <div class="form-group">
                 <label for="nombre">Nombre de la Cancha:</label>
-                <input type="text" id="nombre" name="nombre" value="${cancha.nombre}" required placeholder="Ej: Cancha Central 1">
+                <input type="text" id="nombre" name="nombre" value="<c:out value='${cancha.nombre}'/>" required placeholder="Ej: Cancha Central 1">
             </div>
 
             <div class="form-group">
@@ -40,7 +42,7 @@
                 <select id="idCategoria" name="idCategoria" required>
                     <c:forEach var="cat" items="${categorias}">
                         <option value="${cat.idCategoria}" ${cancha.categoria != null && cancha.categoria.idCategoria == cat.idCategoria ? 'selected' : ''}>
-                            ${cat.nombre}
+                            <c:out value='${cat.nombre}'/>
                         </option>
                     </c:forEach>
                 </select>
@@ -53,7 +55,7 @@
 
             <div class="form-group">
                 <label for="caracteristicas">Características y Equipamiento:</label>
-                <textarea id="caracteristicas" name="caracteristicas" placeholder="Grass sintético, iluminación LED, camerinos...">${cancha.caracteristicas}</textarea>
+                <textarea id="caracteristicas" name="caracteristicas" placeholder="Grass sintético, iluminación LED, camerinos..."><c:out value='${cancha.caracteristicas}'/></textarea>
             </div>
 
             <div class="form-group">
@@ -64,8 +66,8 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn-submit">Guardar Cancha</button>
-            <a href="<c:url value='/canchas/admin'/>" class="btn-cancelar">Cancelar y Volver</a>
+            <button type="submit" class="button primary full">Guardar Cancha</button>
+            <a href="<c:url value='/canchas/admin'/>" class="button secondary full">Cancelar y Volver</a>
         </form>
     </div>
 </body>

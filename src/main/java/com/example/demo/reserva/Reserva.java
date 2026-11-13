@@ -1,5 +1,8 @@
 package com.example.demo.reserva;
 
+import com.example.demo.operacion.Pago;
+
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -110,4 +113,26 @@ public class Reserva {
     public Pago getPago() { return pago; }
 
     public void setPago(Pago pago) { this.pago = pago; }
+
+    public static class Borrador implements Serializable {
+        private final Long idUsuario;
+        private final Long idCancha;
+        private final LocalDate fecha;
+        private final LocalTime horaInicio;
+        private final LocalTime horaFin;
+
+        public Borrador(Long idUsuario, Long idCancha, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin) {
+            this.idUsuario = idUsuario;
+            this.idCancha = idCancha;
+            this.fecha = fecha;
+            this.horaInicio = horaInicio;
+            this.horaFin = horaFin;
+        }
+
+        public Long getIdUsuario() { return idUsuario; }
+        public Long getIdCancha() { return idCancha; }
+        public LocalDate getFecha() { return fecha; }
+        public LocalTime getHoraInicio() { return horaInicio; }
+        public LocalTime getHoraFin() { return horaFin; }
+    }
 }

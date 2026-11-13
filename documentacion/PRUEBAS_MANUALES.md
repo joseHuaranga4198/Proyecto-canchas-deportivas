@@ -1,0 +1,24 @@
+# Guion de demostración y pruebas manuales
+
+Usar preferentemente el perfil `demo`, que opera con datos ficticios en memoria. El perfil normal conserva la base local. Abrir `http://localhost:8086/` y no compartir URLs autenticadas.
+
+1. **Parte pública:** comprobar Inicio, Sobre nosotros, Publicidad y Contacto. El logotipo ⚽ CanchaYa debe tener la misma apariencia y enlazar al inicio. Las fotografías son ilustrativas. Contacto no envía ni guarda datos.
+2. **Registro y acceso:** registrar un cliente con datos válidos; intentar un correo duplicado y entradas inválidas. Una clave incorrecta debe rechazarse. El registro público no debe crear administradores.
+3. **Cliente:** acceder como `cliente@canchaya.pe / cliente123` en demo. El menú debe mostrar Canchas, Disponibilidad, Mis reservas y Mi perfil, sin páginas informativas. Sus rutas públicas deben redirigir. Editar datos propios y comprobar que no cambian permisos.
+4. **Nueva reserva:** elegir mañana o una fecha posterior, cancha y horario libre. El borrador no debe aparecer todavía en el historial. Confirmar el pago simulado; deben existir reserva y pago por el precio correcto. Repetir el envío no debe generar otra reserva.
+5. **Horarios:** intentar fin anterior al inicio, horas fraccionadas, fecha pasada, antes de 08:00 y después de 22:00. Deben rechazarse también enviando la petición directamente. Comprobar que 21:00–22:00 es válido.
+6. **Conflictos:** intentar otra reserva para la misma cancha y horario; debe rechazarse. Un horario adyacente debe permitirse. Con dos accesos independientes, confirmar simultáneamente el mismo turno: solo uno debe registrarse.
+7. **Cancelación propia:** crear una reserva al menos dos días en el futuro y cancelarla. Verificar estado CANCELADA, devolución completa simulada y conservación del pago original. El horario vuelve a estar libre. Una segunda cancelación no agrega otra devolución. Con menos de 24 horas debe rechazarse al cliente.
+8. **Acceso independiente:** desde una sesión iniciada pulsar Abrir otra sesión. Debe abrir un login limpio que permita usar otro usuario sin cambiar el primero. Duplicar la URL original conserva su sesión. Cerrar sesión debe ser un POST y no afectar el otro acceso independiente.
+9. **Administrador:** acceder con `admin@canchas.pe / admin123`. Verificar Panel, Canchas, Categorías, Clientes, Reservas, Mantenimiento, Pagos y Métricas. El logo redirige al panel. Un cliente no debe acceder a estas rutas, incluidos sus POST.
+10. **Catálogos:** crear/editar cancha, rechazar precio cero/negativo y categoría inexistente, inactivar y reactivar. Crear/editar categoría, rechazar duplicados y eliminar una que no tenga canchas. Una categoría asociada no debe eliminarse.
+11. **Clientes:** editar un cliente y comprobar duplicados. Bloquear al cliente que tenga una sesión abierta: la siguiente petición debe perder acceso. Desbloquear y volver a iniciar sesión.
+12. **Administración de reservas:** filtrar por código, cliente, cancha, estado y fechas. Ver el detalle y cancelar una reserva confirmada como excepción administrativa. Comprobar la devolución y que no se cancela dos veces.
+13. **Mantenimiento:** bloquear un horario futuro libre con motivo. Debe aparecer Mantenimiento en la consulta pública e impedir reservas. No se puede bloquear sobre reservas o bloqueos existentes. Anular el bloqueo debe devolver disponibilidad sin borrar el historial.
+14. **Pagos:** filtrar por fecha de pago, cancha y devolución. Comprobar pagado, devuelto y saldo retenido. Si hay cancelaciones históricas sin devolución, regularizarlas una sola vez.
+15. **Métricas:** con datos demo, comprobar cinco gráficos, tres líneas y dos barras. Cambiar fechas/cancha y abrir las tablas de valores. Verificar que un día sin operaciones muestra cero y que el valor de hoy no suma los anteriores. El gráfico de pagos muestra bruto y advierte que las devoluciones se consultan aparte.
+16. **Formularios:** enviar un POST sin token CSRF o con token de otra sesión; debe responder 403 sin alterar datos. Recargar el formulario debe permitir continuar. IDs inválidos o inexistentes deben responder con validación/404 sin mostrar SQL o trazas.
+17. **Presentación:** comprobar escritorio y ancho móvil (aprox. 390 px). El menú debe poder distribuirse en líneas, las tablas desplazarse horizontalmente y los gráficos mantener ejes legibles. Revisar consola de navegador por errores y que Chart.js carga desde `/js/vendor/` sin Internet.
+18. **Persistencia:** en modo normal, registrar datos, apagar y volver a iniciar. Deben conservarse. En demo los datos se reinician al apagar. La migración de contraseñas no debe cambiar las claves de acceso.
+
+Las pruebas de concurrencia, rollback, roles, CSRF, métricas y migración también están automatizadas. Consultar `VERIFICACION_FINAL.md` para los resultados ejecutados.
