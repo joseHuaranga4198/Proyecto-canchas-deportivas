@@ -32,7 +32,7 @@
 
         <div class="grid-layout">
             <div class="form-card">
-                <c:if test="${not empty error}"><p role="alert" style="color:#991b1b;background:#fee2e2;padding:1rem;"><c:out value="${error}"/></p></c:if>
+                <c:if test="${not empty error}"><p role="alert" style="color:#991b1b;background:#fee2e2;padding:1rem;"><c:out value="${error}"/></p></c:if><c:if test="${not empty mensaje}"><p class="notice success" role="status"><c:out value="${mensaje}"/></p></c:if><p class="muted">Las categorías no se eliminan: al desactivarlas, sus canchas dejan de mostrarse en el catálogo y se conservan sus reservas.</p>
 <h3><c:choose><c:when test="${not empty nuevaCategoria.idCategoria}">Editar categoría</c:when><c:otherwise>Nueva categoría</c:otherwise></c:choose></h3>
                 <form action="<c:url value='/admin/categorias/guardar'/>" method="post">
 <input type="hidden" name="_csrf" value="${csrfToken}">
@@ -77,9 +77,12 @@
                                 <td><span class="badge">${cat.estado}</span></td>
                                 <td>
                                     <a class="button secondary small" href="<c:url value='/admin/categorias/editar/${cat.idCategoria}'/>">Editar</a>
-<form action="<c:url value='/admin/categorias/eliminar/${cat.idCategoria}'/>" method="post" style="display:inline;">
+<form action="<c:url value='/admin/categorias/estado/${cat.idCategoria}'/>" method="post" style="display:inline;">
 <input type="hidden" name="_csrf" value="${csrfToken}">
-                                        <button type="submit" class="button danger small">Eliminar</button>
+<c:choose><c:when test="${cat.estado eq 'ACTIVA'}"><input type="hidden" name="estado" value="INACTIVA">
+                                        <button type="submit" class="button danger small">Desactivar</button></c:when>
+<c:otherwise><input type="hidden" name="estado" value="ACTIVA">
+                                        <button type="submit" class="button primary small">Reactivar</button></c:otherwise></c:choose>
                                     </form>
                                 </td>
                             </tr>

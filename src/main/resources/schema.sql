@@ -70,3 +70,6 @@ CREATE TABLE IF NOT EXISTS devolucion (
 CREATE INDEX IF NOT EXISTS idx_reserva_horario ON reserva(id_cancha,fecha,estado,hora_inicio,hora_fin);
 CREATE INDEX IF NOT EXISTS idx_reserva_usuario ON reserva(id_usuario,fecha);
 CREATE INDEX IF NOT EXISTS idx_bloqueo_horario ON bloqueo_cancha(id_cancha,fecha,estado);
+
+-- Unifica el nombre del estado de cliente (antes BLOQUEADO).
+UPDATE usuario SET estado = 'SUSPENDIDO' WHERE estado = 'BLOQUEADO';

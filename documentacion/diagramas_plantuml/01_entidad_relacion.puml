@@ -1,0 +1,82 @@
+@startuml
+title Modelo entidad-relación de CanchaYa
+hide circle
+skinparam linetype ortho
+entity USUARIO {
+  * id_usuario : BIGINT <<PK>>
+  --
+  nombres : VARCHAR(100)
+  apellidos : VARCHAR(100)
+  documento : VARCHAR(20) <<UK>>
+  telefono : VARCHAR(20)
+  correo : VARCHAR(100) <<UK>>
+  contrasena : VARCHAR(255)
+  rol : VARCHAR(20)
+  estado : VARCHAR(20)
+}
+entity CATEGORIA {
+  * id_categoria : BIGINT <<PK>>
+  --
+  nombre : VARCHAR(50) <<UK>>
+  descripcion : VARCHAR(255)
+  estado : VARCHAR(20)
+}
+entity CANCHA {
+  * id_cancha : BIGINT <<PK>>
+  --
+  id_categoria : BIGINT <<FK>>
+  nombre : VARCHAR(100)
+  caracteristicas : VARCHAR(500)
+  precio_hora : DECIMAL(10,2)
+  estado : VARCHAR(20)
+}
+entity RESERVA {
+  * id_reserva : BIGINT <<PK>>
+  --
+  id_usuario : BIGINT <<FK>>
+  id_cancha : BIGINT <<FK>>
+  fecha : DATE
+  hora_inicio : TIME
+  hora_fin : TIME
+  importe : DECIMAL(10,2)
+  estado : VARCHAR(20)
+  fecha_registro : TIMESTAMP
+}
+entity PAGO {
+  * id_pago : BIGINT <<PK>>
+  --
+  id_reserva : BIGINT <<FK, UK>>
+  importe : DECIMAL(10,2)
+  fecha_pago : TIMESTAMP
+  estado : VARCHAR(20)
+}
+entity DEVOLUCION {
+  * id_devolucion : BIGINT <<PK>>
+  --
+  id_pago : BIGINT <<FK, UK>>
+  importe : DECIMAL(10,2)
+  fecha_devolucion : TIMESTAMP
+  motivo : VARCHAR(250)
+  id_usuario : BIGINT <<FK>>
+}
+entity BLOQUEO_CANCHA {
+  * id_bloqueo : BIGINT <<PK>>
+  --
+  id_cancha : BIGINT <<FK>>
+  fecha : DATE
+  hora_inicio : TIME
+  hora_fin : TIME
+  motivo : VARCHAR(250)
+  estado : VARCHAR(20)
+  id_administrador : BIGINT <<FK>>
+  fecha_registro : TIMESTAMP
+}
+USUARIO ||--o{ RESERVA : realiza
+CANCHA ||--o{ RESERVA : recibe
+CATEGORIA ||--o{ CANCHA : clasifica
+RESERVA ||--o| PAGO : tiene
+PAGO ||--o| DEVOLUCION : genera
+USUARIO ||--o{ DEVOLUCION : registra
+CANCHA ||--o{ BLOQUEO_CANCHA : restringe
+USUARIO ||--o{ BLOQUEO_CANCHA : programa
+@enduml

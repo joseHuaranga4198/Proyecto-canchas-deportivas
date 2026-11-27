@@ -50,7 +50,7 @@
       <c:otherwise><p class="muted">No hay datos de pago asociados en este registro.</p></c:otherwise>
     </c:choose>
     <c:if test="${not empty devolucion}"><div class="notice success"><strong>Devolución simulada registrada</strong><p>S/ <c:out value="${devolucion.importe}"/> · <c:out value="${devolucion.fecha}"/></p><p><c:out value="${devolucion.motivo}"/></p></div></c:if>
-<c:if test="${reserva.estado eq 'CANCELADA' and empty devolucion}"><p class="muted refund-note">Cancelación histórica sin devolución registrada. Administración puede regularizarla desde Pagos.</p></c:if>
+
   </section>
 
   <c:if test="${puedeCancelar}"><section class="cancel-box"><div><h2>Cancelar y devolver el pago</h2><p><c:choose><c:when test="${esAdmin}">Cancelación administrativa excepcional.</c:when><c:otherwise>Cancelación disponible con al menos 24 horas de anticipación.</c:otherwise></c:choose> Se devuelve el importe completo de forma simulada y se conserva el historial.</p></div>

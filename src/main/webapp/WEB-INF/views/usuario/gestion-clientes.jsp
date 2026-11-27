@@ -54,20 +54,20 @@
                                     <span class="badge-activo">ACTIVO</span>
                                 </c:when>
                                 <c:otherwise>
-                                    <span class="badge-bloqueado">BLOQUEADO</span>
+                                    <span class="badge-bloqueado">SUSPENDIDO</span>
                                 </c:otherwise>
                             </c:choose>
                         </td>
                         <td>
                             <a class="button secondary small" href="<c:url value='/usuario/admin/editar/${c.idUsuario}'/>">Editar</a>
-<form action="<c:url value='/usuario/admin/bloquear/${c.idUsuario}'/>" method="post" style="display:inline;">
+<form action="<c:url value='/usuario/admin/suspender/${c.idUsuario}'/>" method="post" style="display:inline;">
 <input type="hidden" name="_csrf" value="${csrfToken}">
                                 <c:choose>
                                     <c:when test="${c.estado == 'ACTIVO'}">
-                                        <button type="submit" class="button danger small">Bloquear</button>
+                                        <button type="submit" class="button danger small">Suspender</button>
                                     </c:when>
                                     <c:otherwise>
-                                        <button type="submit" class="button success small">Desbloquear</button>
+                                        <button type="submit" class="button success small">Reactivar</button>
                                     </c:otherwise>
                                 </c:choose>
                             </form>

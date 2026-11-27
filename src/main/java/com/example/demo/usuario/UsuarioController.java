@@ -46,12 +46,11 @@ public class UsuarioController {
             Usuario user = usuarioService.autenticar(correo, passFinal);
 
             if (user == null) {
-                model.addAttribute("error", "Credenciales incorrectas.");
-                return "usuario/login";
-            }
-
-            if ("BLOQUEADO".equalsIgnoreCase(user.getEstado())) {
-                model.addAttribute("error", "Su cuenta se encuentra bloqueada por administración.");
+                if (usuarioService.estaSuspendido(correo, passFinal)) {
+                    model.addAttribute("error", "Su cuenta se encuentra suspendida por administración.");
+                } else {
+                    model.addAttribute("error", "Credenciales incorrectas.");
+                }
                 return "usuario/login";
             }
 
@@ -133,14 +132,14 @@ public class UsuarioController {
         }
     }
 
-    @PostMapping("/admin/bloquear/{id}")
-    public String bloquearCliente(@PathVariable("id") Long id, HttpSession session, RedirectAttributes redirect) {
+    @PostMapping("/admin/suspender/{id}")
+    public String suspenderCliente(@PathVariable("id") Long id, HttpSession session, RedirectAttributes redirect) {
         Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
         if (user == null || !"ADMINISTRADOR".equalsIgnoreCase(user.getRol())) {
             return "redirect:/usuario/login";
         }
         try {
-            usuarioService.alternarBloqueo(id);
+            usuarioService.alternarSuspension(id);
         } catch (IllegalArgumentException ex) {
             redirect.addFlashAttribute("error", ex.getMessage());
         }

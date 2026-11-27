@@ -1,0 +1,23 @@
+@startgantt
+title Cronograma del proyecto CanchaYa (2026)
+Project starts 2026-08-11
+-- Fase 1. Planificación y análisis --
+[Levantamiento de información] starts 2026-08-11 and ends 2026-08-17
+[Diagnóstico, objetivos y justificación] starts 2026-08-15 and ends 2026-08-24
+-- Fase 2. Diseño del sistema --
+[Funcionalidades e interfaces] starts 2026-08-25 and ends 2026-09-03
+[Reglas de negocio] starts 2026-09-01 and ends 2026-09-07
+[Modelo ER y diccionario de datos] starts 2026-09-04 and ends 2026-09-14
+-- Fase 3. Arquitectura y modelado UML --
+[Casos de uso] starts 2026-09-15 and ends 2026-09-21
+[Diagramas de secuencia] starts 2026-09-22 and ends 2026-09-28
+-- Fase 4. Desarrollo e implementación --
+[Entorno Spring Boot, H2 y acceso a datos] starts 2026-09-29 and ends 2026-10-05
+[Módulos de gestión (CRUD)] starts 2026-10-06 and ends 2026-10-19
+[Flujo de reservas, pagos y cancelaciones] starts 2026-10-20 and ends 2026-11-02
+[Panel administrativo y 10 métricas] starts 2026-10-27 and ends 2026-11-08
+-- Fase 5. Pruebas y cierre --
+[Pruebas de integración y de reglas] starts 2026-11-09 and ends 2026-11-16
+[Corrección del informe] starts 2026-11-17 and ends 2026-11-26
+[Sustentación final] starts 2026-11-27 and ends 2026-11-30
+@endgantt

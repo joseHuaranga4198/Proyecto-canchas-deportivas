@@ -1,6 +1,6 @@
 # CanchaYa — Sistema de reserva de canchas deportivas
 
-Aplicación académica de autoservicio con Java, Spring Boot 3.5, Spring MVC, JSP/JSTL, Spring JDBC (`JdbcTemplate`, `RowMapper`) y H2. Chart.js 4.5.1 dibuja cinco gráficos a partir de consultas JDBC. No utiliza JPA, Thymeleaf, JSF ni MySQL.
+Aplicación académica de autoservicio con Java, Spring Boot 3.5, Spring MVC, JSP/JSTL, Spring JDBC (`JdbcTemplate`, `RowMapper`) y H2. Chart.js 4.5.1 dibuja las métricas calculadas con consultas JDBC (5 series de tiempo y 5 indicadores de estado puntual). No utiliza JPA, Thymeleaf, JSF ni MySQL.
 
 ## Ejecutar
 
@@ -19,7 +19,7 @@ También puedes construir y ejecutar el WAR:
 java -jar target/demo-0.0.1-SNAPSHOT.war
 ```
 
-El modo normal conserva sus datos en `./data/canchas.mv.db`. No carga clientes, canchas ni reservas de demostración. `schema.sql` crea las tablas e índices faltantes sin borrar registros. Realiza una copia de `data/` con el sistema apagado antes de trasladar una instalación.
+El modo normal conserva sus datos en `./data/canchas.mv.db`. `schema.sql` crea las tablas e índices faltantes sin borrar registros. En el primer arranque, `datos-iniciales.sql` carga datos de ejemplo (4 cuentas, 3 categorías, 4 canchas, 32 reservas con sus pagos, 4 devoluciones y 1 mantenimiento) para que las métricas muestren información desde el inicio. En los arranques siguientes no duplica nada: cada INSERT solo agrega lo que falta. Las fechas de ejemplo son relativas al día del primer arranque; para regenerarlas, borra la carpeta `data/` con el sistema apagado. Realiza una copia de `data/` con el sistema apagado antes de trasladar una instalación.
 
 ## Acceso administrativo fijo
 
@@ -30,7 +30,7 @@ La cuenta académica se crea automáticamente si no existe ningún administrador
 
 ## Demostración con datos
 
-Para explorar los cinco gráficos y los flujos con datos ficticios en una base **separada en memoria**:
+El perfil `demo` carga los mismos datos de ejemplo en una base **separada en memoria**, que se reinicia en cada arranque:
 
 ```powershell
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=demo"
@@ -38,10 +38,11 @@ Para explorar los cinco gráficos y los flujos con datos ficticios en una base *
 java -jar target/demo-0.0.1-SNAPSHOT.war --spring.profiles.active=demo
 ```
 
-El perfil `demo` ofrece cuatro canchas de fútbol en grass y vóley, 28 reservas históricas, pagos y cuatro devoluciones. Se reinicia al detener la aplicación y nunca usa la base local de trabajo.
+Ambos modos ofrecen cuatro canchas de fútbol en grass y vóley, 28 reservas históricas, 4 reservas de hoy y de los próximos días, pagos, devoluciones y un mantenimiento programado. El perfil `demo` se reinicia al detener la aplicación y nunca usa la base local de trabajo.
 
 - Administrador: **admin@canchas.pe / admin123**
-- Cliente de demostración: **cliente@canchaya.pe / cliente123**
+- Clientes de demostración: **cliente@canchaya.pe / cliente123** y **ana@canchaya.pe / cliente123**
+- Cliente suspendido: **luis@canchaya.pe / cliente123** (no puede ingresar)
 
 Usa un solo proceso por puerto. Si otro proceso usa 8086, detén ese proceso o añade `--server.port=8087` al WAR.
 
@@ -52,9 +53,8 @@ Usa un solo proceso por puerto. Si otro proceso usa 8086, detén ese proceso o a
 - Cliente y cancha deben estar activos; la categoría debe estar activa. Reservas y mantenimiento no pueden superponerse. Se bloquea la fila de la cancha para serializar operaciones concurrentes.
 - El cliente cancela con al menos 24 horas de anticipación. Administración puede gestionar cancelaciones excepcionales de reservas confirmadas.
 - Cancelar registra la devolución completa simulada dentro de la misma transacción. El pago original permanece registrado. Una restricción única impide devolverlo dos veces.
-- Las cancelaciones históricas sin devolución pueden regularizarse desde Pagos.
-- Inactivar una cancha o bloquear un cliente conserva su historial. No se elimina una categoría con canchas vinculadas.
-- Cada petición revalida en H2 el rol y estado de la sesión. Un bloqueo impide seguir usando una sesión abierta.
+- Inactivar una cancha o suspender un cliente conserva su historial. Las categorías no se eliminan: se desactivan y sus canchas salen del catálogo.
+- Cada petición revalida en H2 el rol y estado de la sesión. Una suspensión impide seguir usando una sesión abierta.
 
 ## Sesiones y navegación
 
@@ -82,15 +82,15 @@ Los módulos con acceso a datos separan el modelo, el controlador, la interfaz `
 | `/admin/panel` | Administrador |
 | `/canchas/admin`, `/admin/categorias`, `/usuario/admin/lista` | Gestión de catálogos y clientes |
 | `/reservas/admin` | Consulta, detalle y cancelación administrativa |
-| `/admin/disponibilidad` | Bloqueos temporales por mantenimiento |
-| `/admin/pagos` | Pagos, devoluciones, filtros y regularización histórica |
-| `/admin/metricas` | Cinco gráficos y sus tablas |
+| `/admin/disponibilidad` | Mantenimientos programados de canchas |
+| `/admin/pagos` | Pagos, devoluciones y filtros |
+| `/admin/metricas` | Diez métricas: 5 indicadores y 5 gráficos con sus tablas |
 
 Todos los formularios POST incluyen un token CSRF vinculado a la sesión. Las rutas administrativas requieren ADMINISTRADOR; reserva e historial propio requieren CLIENTE. Los servicios validan nuevamente los datos aunque no se use el formulario HTML.
 
 ## Métricas
 
-Tres líneas (reservas registradas/día, pagos brutos/día, horas confirmadas/día) y dos gráficos de barras (reservas confirmadas por cancha y por categoría). No hay acumulados progresivos. Cada gráfico explica su fecha y estados, incluye ejes, filtros y tabla de valores; los días sin movimientos valen cero. Los pagos brutos no representan ingreso neto: las devoluciones se consultan en Pagos. Las clasificaciones por cancha/categoría usan sus nombres y categoría actuales. Chart.js se sirve localmente, sin CDN en ejecución; licencia en `static/js/vendor/Chart.js-LICENSE.md`.
+Cinco series de tiempo (reservas registradas/día, importe pagado/día, horas reservadas/día, importe devuelto/día y clientes distintos/día) y cinco indicadores de estado puntual (reservas de hoy, ocupación de hoy, reservas pendientes de uso, saldo retenido y mantenimientos programados). No hay acumulados progresivos. Cada gráfico explica su fecha y estados, incluye ejes, filtros y tabla de valores; los días sin movimientos valen cero. Los pagos brutos no representan ingreso neto: las devoluciones se consultan en Pagos. Las clasificaciones por cancha/categoría usan sus nombres y categoría actuales. Chart.js se sirve localmente, sin CDN en ejecución; licencia en `static/js/vendor/Chart.js-LICENSE.md`.
 
 ## Contacto y publicidad
 
@@ -103,7 +103,7 @@ Contacto muestra un formulario estático de demostración: no envía ni almacena
 .\mvnw.cmd package
 ```
 
-Las pruebas usan exclusivamente H2 en memoria. Incluyen validaciones, permisos, CSRF, migración de contraseñas, rollback, devolución única, cinco métricas, mantenimiento y concurrencia. Los scripts destructivos de pruebas no deben copiarse al perfil normal.
+Las pruebas usan exclusivamente H2 en memoria. Incluyen validaciones, permisos, CSRF, migración de contraseñas, rollback, devolución única, diez métricas, mantenimiento y concurrencia. Los scripts destructivos de pruebas no deben copiarse al perfil normal.
 
 - `PLAN_DESARROLLO.md`: estado final del plan.
 - `documentacion/INFORME_TECNICO_FINAL.md`: modelo, reglas y matriz F01–F24.

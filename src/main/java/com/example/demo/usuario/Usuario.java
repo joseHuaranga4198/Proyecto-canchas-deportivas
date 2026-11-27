@@ -10,7 +10,7 @@ public class Usuario {
     private String correo;
     private String contrasena;
     private String rol;    // "CLIENTE", "ADMINISTRADOR"
-    private String estado; // "ACTIVO", "BLOQUEADO"
+    private String estado; // "ACTIVO", "SUSPENDIDO"
 
     public Usuario() {
     }

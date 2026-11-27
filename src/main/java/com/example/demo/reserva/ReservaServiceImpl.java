@@ -89,7 +89,7 @@ public class ReservaServiceImpl implements ReservaService {
     public List<Reserva> listarCliente(Long idUsuario, String estado) {
         validarCliente(idUsuario);
         if (estado == null || estado.isBlank()) return reservas.listarPorUsuario(idUsuario);
-        return reservas.listarPorUsuarioYEstado(idUsuario, Validaciones.estado(estado, null, "PENDIENTE", "CONFIRMADA", "CANCELADA"));
+        return reservas.listarPorUsuarioYEstado(idUsuario, Validaciones.estado(estado, null, "CONFIRMADA", "CANCELADA"));
     }
 
     @Override
@@ -140,7 +140,7 @@ public class ReservaServiceImpl implements ReservaService {
     public List<Reserva> buscarAdmin(Long idReserva, String cliente, String cancha, String estado,
             LocalDate fechaDesde, LocalDate fechaHasta) {
         if (idReserva != null) Validaciones.id(idReserva, "La reserva");
-        if (estado != null && !estado.isBlank()) estado = Validaciones.estado(estado, null, "PENDIENTE", "CONFIRMADA", "CANCELADA");
+        if (estado != null && !estado.isBlank()) estado = Validaciones.estado(estado, null, "CONFIRMADA", "CANCELADA");
         Validaciones.texto(cliente, "Cliente", 200, false);
         Validaciones.texto(cancha, "Cancha", 100, false);
         if (fechaDesde != null && fechaHasta != null && fechaDesde.isAfter(fechaHasta)) {

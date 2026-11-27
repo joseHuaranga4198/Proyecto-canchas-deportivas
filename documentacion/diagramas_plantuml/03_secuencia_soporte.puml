@@ -1,0 +1,29 @@
+@startuml
+title Proceso de soporte: F22 Programar mantenimiento de cancha
+autonumber
+actor Administrador
+participant "disponibilidad.jsp" as V
+participant OperacionController as K
+participant "OperacionService\n(OperacionServiceImpl)" as S
+participant ReservaService as Q
+participant ReservaDAO as R
+participant OperacionDAO as O
+database "H2" as B
+Administrador -> V : Cancha, fecha, inicio, fin y motivo
+V -> K : POST /admin/disponibilidad/programar
+K -> S : programarMantenimiento(idAdmin, ...)
+S -> S : validarAdmin(): administrador ACTIVO
+S -> Q : validarIntervaloFuturo()
+S -> R : bloquearCancha()
+S -> R : buscarSuperpuestas()
+R -> B : SELECT reservas no canceladas
+alt hay una reserva en el intervalo
+  S --> K : IllegalStateException
+  K --> V : "Hay reservas en ese horario..."
+else el intervalo está libre
+  S -> O : bloqueada()
+  S -> O : guardarBloqueo()
+  O -> B : INSERT INTO bloqueo_cancha (ACTIVO)
+  K --> V : "Mantenimiento programado correctamente"
+end
+@enduml

@@ -15,11 +15,12 @@ class DemoProfileIntegrationTest {
     @Autowired JdbcTemplate jdbc;@Autowired UsuarioService usuarios;@Autowired MetricasService metricas;
     @Test void demostracionTieneDatosCoherentesYAmbosAccesos(){
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM cancha",Integer.class)).isEqualTo(4);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM reserva",Integer.class)).isEqualTo(28);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM reserva",Integer.class)).isEqualTo(32);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM devolucion",Integer.class)).isEqualTo(4);
         assertThat(usuarios.autenticar("admin@canchas.pe","admin123").getRol()).isEqualTo("ADMINISTRADOR");
         assertThat(usuarios.autenticar("cliente@canchaya.pe","cliente123").getRol()).isEqualTo("CLIENTE");
         LocalDate hoy=LocalDate.now(ZoneId.of("America/Lima"));
         assertThat(metricas.graficos(hoy.minusDays(29),hoy,null)).hasSize(5);
+        assertThat(metricas.estadoPuntual(null)).hasSize(5);
     }
 }

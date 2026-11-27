@@ -53,15 +53,9 @@ public class CategoriaRepository implements CategoriaDAO {
     }
 
     @Override
-    public int eliminar(Long idCategoria) {
-        String sql = "DELETE FROM categoria WHERE id_categoria = ?";
-        return jdbcTemplate.update(sql, idCategoria);
-    }
-
-    @Override
-    public long contarCanchasAsociadas(Long idCategoria) {
-        String sql = "SELECT COUNT(*) FROM cancha WHERE id_categoria = ?";
-        Long total = jdbcTemplate.queryForObject(sql, Long.class, idCategoria);
-        return total != null ? total : 0L;
+    public int cambiarEstado(Long idCategoria, String estado) {
+        // Las categorías no se eliminan: solo cambian de estado y conservan sus canchas y reservas.
+        String sql = "UPDATE categoria SET estado = ? WHERE id_categoria = ?";
+        return jdbcTemplate.update(sql, estado, idCategoria);
     }
 }

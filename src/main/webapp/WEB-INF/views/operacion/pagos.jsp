@@ -13,12 +13,6 @@
     <td>
       <div class="operacion-acciones">
         <a class="button small secondary" href="<c:url value='/reservas/admin/${p.reservaId}'/>">Ver reserva</a>
-        <c:if test="${p.reservaEstado eq 'CANCELADA' and empty p.devuelto}">
-          <form action="<c:url value='/admin/pagos/devolver/${p.reservaId}'/>" method="post">
-            <input type="hidden" name="_csrf" value="${csrfToken}">
-            <button class="button small primary" type="submit">Regularizar devolución</button>
-          </form>
-        </c:if>
       </div>
     </td>
     <td>#${p.id} / #${p.reservaId}</td><td><c:out value="${p.cliente}"/><span class="subtext"><c:out value="${p.cancha}"/></span></td><td>${p.fecha}</td><td>S/ ${p.importe}</td><td><c:choose><c:when test="${not empty p.devuelto}">S/ ${p.devuelto}<span class="subtext">${p.fechaDevolucion}</span></c:when><c:otherwise>S/ 0.00</c:otherwise></c:choose></td><td>S/ ${p.importe - (empty p.devuelto ? 0 : p.devuelto)}</td><td><c:out value="${p.reservaEstado}"/></td></tr></c:forEach>

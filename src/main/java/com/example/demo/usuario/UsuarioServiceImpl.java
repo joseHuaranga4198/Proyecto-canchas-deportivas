@@ -26,6 +26,13 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    public boolean estaSuspendido(String correo, String contrasena) {
+        if (correo == null || correo.isBlank() || contrasena == null || contrasena.isBlank()) return false;
+        Usuario usuario = usuarioDAO.autenticar(correo.trim(), contrasena);
+        return usuario != null && "SUSPENDIDO".equalsIgnoreCase(usuario.getEstado());
+    }
+
+    @Override
     public boolean registrarCliente(Usuario usuario) {
         validarDatosPersonales(usuario);
         if (usuario.getContrasena() == null || usuario.getContrasena().isBlank()
@@ -57,13 +64,13 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void alternarBloqueo(Long idUsuario) {
+    public void alternarSuspension(Long idUsuario) {
         Validaciones.id(idUsuario, "El cliente");
         Usuario u = usuarioDAO.obtenerPorId(idUsuario);
         if (u == null || !"CLIENTE".equalsIgnoreCase(u.getRol())) {
             throw new IllegalArgumentException("No se encontró el cliente.");
         }
-        String nuevoEstado = "ACTIVO".equalsIgnoreCase(u.getEstado()) ? "BLOQUEADO" : "ACTIVO";
+        String nuevoEstado = "ACTIVO".equalsIgnoreCase(u.getEstado()) ? "SUSPENDIDO" : "ACTIVO";
         usuarioDAO.cambiarEstado(idUsuario, nuevoEstado);
     }
 

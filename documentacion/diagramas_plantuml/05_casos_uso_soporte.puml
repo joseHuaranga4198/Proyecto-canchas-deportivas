@@ -1,0 +1,35 @@
+@startuml
+title CanchaYa: procesos de soporte
+left to right direction
+actor Visitante
+actor Cliente
+actor Administrador
+rectangle CanchaYa {
+  usecase "F01 Crear cuenta de cliente" as F01
+  usecase "F28 Ver información pública" as F28
+  usecase "F05 Editar mi perfil" as F05
+  usecase "Iniciar / cerrar sesión" as LOG
+  usecase "F02 Listar clientes" as F02
+  usecase "F03 Editar datos de un cliente" as F03
+  usecase "F04 Suspender o reactivar cliente" as F04
+  usecase "F06-F09 Gestionar categorías" as CAT
+  usecase "F10, F12-F14 Gestionar canchas" as CAN
+  usecase "F22-F24 Programar, listar y anular mantenimiento" as MAN
+  usecase "F25 Consultar pagos y devoluciones" as F25
+  usecase "F26 Consultar métricas" as F26
+  usecase "F27 Ver resumen operativo" as F27
+}
+Visitante --> F01
+Visitante --> F28
+Cliente --> F05
+Cliente --> LOG
+F02 <-- Administrador
+F03 <-- Administrador
+F04 <-- Administrador
+CAT <-- Administrador
+CAN <-- Administrador
+MAN <-- Administrador
+F25 <-- Administrador
+F26 <-- Administrador
+F27 <-- Administrador
+@enduml
