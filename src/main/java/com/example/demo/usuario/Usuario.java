@@ -9,8 +9,8 @@ public class Usuario {
     private String telefono;
     private String correo;
     private String contrasena;
-    private String rol;    // "CLIENTE", "ADMINISTRADOR"
-    private String estado; // "ACTIVO", "BLOQUEADO"
+    private String rol;
+    private String estado;
 
     public Usuario() {
     }

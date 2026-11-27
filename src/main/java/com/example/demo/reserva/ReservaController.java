@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Clock;
 import java.util.List;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,7 +41,7 @@ public class ReservaController {
     @GetMapping("/disponibilidad")
     public String verDisponibilidad(
             @RequestParam(name = "canchaId", required = false) Long canchaId,
-            @RequestParam(name = "fecha", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            @RequestParam(name = "fecha", required = false) LocalDate fecha,
             Model model, jakarta.servlet.http.HttpServletResponse response) {
         try {
             List<Cancha> canchas = canchaService.listarDisponibles();
@@ -80,8 +79,8 @@ public class ReservaController {
 
     @GetMapping("/nueva")
     public String formularioReserva(@RequestParam(name = "canchaId", required = false) Long canchaId,
-            @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate fecha,
-            @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.TIME) LocalTime inicio,
+            @RequestParam(required=false) LocalDate fecha,
+            @RequestParam(required=false) LocalTime inicio,
             HttpSession session, Model model, jakarta.servlet.http.HttpServletResponse response) {
         try {
             Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
@@ -109,9 +108,9 @@ public class ReservaController {
     @PostMapping("/guardar")
     public String procesarReserva(
             @RequestParam("canchaId") Long canchaId,
-            @RequestParam("fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
-            @RequestParam("horaInicio") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime horaInicio,
-            @RequestParam("horaFin") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime horaFin,
+            @RequestParam("fecha") LocalDate fecha,
+            @RequestParam("horaInicio") LocalTime horaInicio,
+            @RequestParam("horaFin") LocalTime horaFin,
             HttpSession session, Model model, jakarta.servlet.http.HttpServletResponse response) {
         try {
             Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
@@ -242,8 +241,8 @@ public class ReservaController {
     public String reservasAdmin(@RequestParam(required = false) Long idReserva,
             @RequestParam(required = false) String cliente, @RequestParam(required = false) String cancha,
             @RequestParam(required = false) String estado,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaDesde,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaHasta,
+            @RequestParam(required = false) LocalDate fechaDesde,
+            @RequestParam(required = false) LocalDate fechaHasta,
             HttpSession session, Model model, jakarta.servlet.http.HttpServletResponse response) {
         try {
             if (!esAdmin(session)) return "redirect:/usuario/login";

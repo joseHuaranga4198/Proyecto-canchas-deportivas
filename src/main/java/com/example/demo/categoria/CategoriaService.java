@@ -14,5 +14,5 @@ public interface CategoriaService {
 
     void actualizar(Categoria categoria);
 
-    boolean eliminar(Long idCategoria);
+    void cambiarEstado(Long idCategoria, String estado);
 }

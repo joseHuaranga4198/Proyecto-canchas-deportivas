@@ -4,3 +4,5 @@
 
 .operacion-acciones { display: grid; justify-items: start; gap: 6px; }
 .operacion-acciones .button { white-space: nowrap; }
+
+.indicadores-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;margin:20px 0}.kpi{text-align:center;padding:18px}.kpi h2{font-size:15px;min-height:38px}.kpi-valor{font-size:34px;font-weight:700;color:#2864dc;margin:8px 0 0}.kpi-unidad{font-size:13px;color:#657187;margin:0 0 8px}.kpi .muted{font-size:12px}.metricas-titulo{margin-top:28px}@media(max-width:1000px){.indicadores-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

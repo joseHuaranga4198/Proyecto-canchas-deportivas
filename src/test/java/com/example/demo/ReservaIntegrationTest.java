@@ -146,7 +146,6 @@ class ReservaIntegrationTest {
 
     @Test
     void adminVeDetalleAjenoYCancelaSinPlazoDe24Horas() throws Exception {
-        // La reserva inicia dentro de 20 horas: no es cancelable por cliente, sí por administración.
         Reserva reserva = crearReserva(LocalDate.of(2030, 3, 2), LocalTime.of(8, 0));
         Usuario admin = usuarioSesion(1L, "ADMINISTRADOR");
 

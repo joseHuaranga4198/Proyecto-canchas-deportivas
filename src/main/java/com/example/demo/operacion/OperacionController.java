@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -27,23 +26,23 @@ public class OperacionController {
             return "error/general";
         }
     }
-    @PostMapping("/disponibilidad/bloquear")
-    public String bloquear(@RequestParam Long canchaId,@RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate fecha,
-            @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.TIME) LocalTime inicio,@RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.TIME) LocalTime fin,
+    @PostMapping("/disponibilidad/programar")
+    public String programar(@RequestParam Long canchaId,@RequestParam LocalDate fecha,
+            @RequestParam LocalTime inicio,@RequestParam LocalTime fin,
             @RequestParam String motivo,HttpSession session,RedirectAttributes redirect){
-        try{operaciones.bloquear(actor(session),canchaId,fecha,inicio,fin,motivo);redirect.addFlashAttribute("mensaje","Horario bloqueado correctamente.");}
+        try{operaciones.programarMantenimiento(actor(session),canchaId,fecha,inicio,fin,motivo);redirect.addFlashAttribute("mensaje","Mantenimiento programado correctamente.");}
         catch(IllegalArgumentException|IllegalStateException ex){redirect.addFlashAttribute("error",ex.getMessage());}
         return "redirect:/admin/disponibilidad";
     }
     @PostMapping("/disponibilidad/anular/{id}")
     public String anular(@PathVariable Long id,HttpSession session,RedirectAttributes redirect){
-        try{operaciones.anular(actor(session),id);redirect.addFlashAttribute("mensaje","Bloqueo anulado. El horario vuelve a estar disponible si no tiene reservas.");}
+        try{operaciones.anularMantenimiento(actor(session),id);redirect.addFlashAttribute("mensaje","Mantenimiento anulado. El horario vuelve a estar disponible si no tiene reservas.");}
         catch(IllegalArgumentException|IllegalStateException ex){redirect.addFlashAttribute("error",ex.getMessage());}
         return "redirect:/admin/disponibilidad";
     }
     @GetMapping("/pagos")
-    public String pagos(@RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate desde,
-            @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate hasta,
+    public String pagos(@RequestParam(required=false) LocalDate desde,
+            @RequestParam(required=false) LocalDate hasta,
             @RequestParam(required=false) Long canchaId,@RequestParam(required=false) String estado,Model model){
         hasta=hasta==null?LocalDate.now(clock):hasta;desde=desde==null?hasta.minusDays(29):desde;
         model.addAttribute("desde",desde);model.addAttribute("hasta",hasta);model.addAttribute("canchaId",canchaId);model.addAttribute("estado",estado);
@@ -51,12 +50,6 @@ public class OperacionController {
         try{model.addAttribute("pagos",operaciones.pagos(desde,hasta,canchaId,estado));}
         catch(IllegalArgumentException ex){model.addAttribute("error",ex.getMessage());model.addAttribute("pagos",java.util.List.of());}
         return "operacion/pagos";
-    }
-    @PostMapping("/pagos/devolver/{idReserva}")
-    public String devolver(@PathVariable Long idReserva,HttpSession session,RedirectAttributes redirect){
-        try{operaciones.regularizarDevolucion(actor(session),idReserva);redirect.addFlashAttribute("mensaje","Devolución simulada registrada.");}
-        catch(IllegalArgumentException|IllegalStateException ex){redirect.addFlashAttribute("error",ex.getMessage());}
-        return "redirect:/admin/pagos";
     }
     private Long actor(HttpSession session){return ((Usuario)session.getAttribute("usuarioLogueado")).getIdUsuario();}
 }

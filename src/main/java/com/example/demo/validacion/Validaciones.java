@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.Set;
 
-/** Reglas de entrada compartidas por los servicios, independientes de los formularios. */
 public final class Validaciones {
     private Validaciones() { }
 

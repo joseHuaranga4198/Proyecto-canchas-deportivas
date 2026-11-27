@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -84,14 +85,16 @@ public class CategoriaController {
         }
     }
 
-    @PostMapping("/eliminar/{id}")
-    public String eliminar(@PathVariable("id") Long id, HttpSession session, RedirectAttributes redirect) {
+    @PostMapping("/estado/{id}")
+    public String cambiarEstado(@PathVariable("id") Long id, @RequestParam("estado") String estado,
+            HttpSession session, RedirectAttributes redirect) {
         try {
             if (!tienePermisoAdmin(session)) {
                 return "redirect:/usuario/login";
             }
             try {
-                if (!categoriaService.eliminar(id)) redirect.addFlashAttribute("error", "No se puede eliminar una categoría con canchas asociadas.");
+                categoriaService.cambiarEstado(id, estado);
+                redirect.addFlashAttribute("mensaje", "Estado de la categoría actualizado.");
             } catch (IllegalArgumentException ex) {
                 redirect.addFlashAttribute("error", ex.getMessage());
             }

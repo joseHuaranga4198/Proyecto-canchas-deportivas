@@ -38,23 +38,23 @@ class SistemaCompletoIntegrationTest {
     private final LocalDate fecha=LocalDate.of(2030,3,4);
 
     @Test void mantenimientoConMinutosImpideReservarPeroPermiteTurnosFueraDelBloqueo(){
-        operaciones.bloquear(1L,1L,fecha,LocalTime.of(12,15),LocalTime.of(13,45),"Mantenimiento");
+        operaciones.programarMantenimiento(1L,1L,fecha,LocalTime.of(12,15),LocalTime.of(13,45),"Mantenimiento");
         assertThatThrownBy(()->crear(12)).isInstanceOf(IllegalStateException.class);
         assertThat(crear(14).getIdReserva()).isPositive();
         Map<String, Object> bloqueo = operaciones.bloqueos(1L, fecha).get(0);
         assertThat(bloqueo).containsEntry("inicio", LocalTime.of(12, 15)).containsEntry("fin", LocalTime.of(13, 45));
         long id = ((Number) bloqueo.get("id")).longValue();
-        operaciones.anular(1L,id);assertThat(crear(12).getIdReserva()).isPositive();
-        assertThatThrownBy(()->operaciones.anular(1L,id)).isInstanceOf(IllegalStateException.class);
+        operaciones.anularMantenimiento(1L,id);assertThat(crear(12).getIdReserva()).isPositive();
+        assertThatThrownBy(()->operaciones.anularMantenimiento(1L,id)).isInstanceOf(IllegalStateException.class);
     }
     @Test void mantenimientoRechazaReservaExistenteYBloqueoDuplicado(){
         crear(12);
-        assertThatThrownBy(()->operaciones.bloquear(1L,1L,fecha,LocalTime.NOON,LocalTime.of(13,0),"Reparación"))
+        assertThatThrownBy(()->operaciones.programarMantenimiento(1L,1L,fecha,LocalTime.NOON,LocalTime.of(13,0),"Reparación"))
                 .isInstanceOf(IllegalStateException.class).hasMessageContaining("reservas");
-        operaciones.bloquear(1L,1L,fecha,LocalTime.of(14,0),LocalTime.of(15,0),"Limpieza");
-        assertThatThrownBy(()->operaciones.bloquear(1L,1L,fecha,LocalTime.of(14,0),LocalTime.of(16,0),"Limpieza"))
+        operaciones.programarMantenimiento(1L,1L,fecha,LocalTime.of(14,0),LocalTime.of(15,0),"Limpieza");
+        assertThatThrownBy(()->operaciones.programarMantenimiento(1L,1L,fecha,LocalTime.of(14,0),LocalTime.of(16,0),"Limpieza"))
                 .isInstanceOf(IllegalStateException.class);
-        assertThatThrownBy(()->operaciones.bloquear(2L,2L,fecha,LocalTime.NOON,LocalTime.of(13,0),"No autorizado"))
+        assertThatThrownBy(()->operaciones.programarMantenimiento(2L,2L,fecha,LocalTime.NOON,LocalTime.of(13,0),"No autorizado"))
                 .isInstanceOf(IllegalStateException.class);
     }
     @Test void cancelarDevuelveImporteCompletoSinDuplicarNiBorrarPago(){
@@ -72,22 +72,21 @@ class SistemaCompletoIntegrationTest {
         assertThat(reservas.detalleAdmin(r.getIdReserva()).getEstado()).isEqualTo("CONFIRMADA");
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM devolucion",Integer.class)).isZero();
     }
-    @Test void regularizaCancelacionHistoricaConPermisoAdmin(){
-        Reserva r=crear(12);jdbc.update("UPDATE reserva SET estado='CANCELADA' WHERE id_reserva=?",r.getIdReserva());
-        operaciones.regularizarDevolucion(1L,r.getIdReserva());
-        assertThat(operaciones.devolucion(r.getIdReserva())).isNotNull();
-        assertThatThrownBy(()->operaciones.regularizarDevolucion(1L,r.getIdReserva())).isInstanceOf(IllegalStateException.class);
-    }
-    @Test void metricasSonCincoNoAcumuladasYExcluyenCanceladasEnUso(){
+    @Test void metricasSonDiezCincoSeriesYCincoEstadoPuntual(){
         Reserva a=crear(12);crear(14);reservas.cancelarPropia(a.getIdReserva(),2L);
         List<Metrica> datos=metricas.graficos(LocalDate.of(2030,3,1),fecha,null);
         assertThat(datos).hasSize(5);
         assertThat(datos.get(0).valores()).extracting(Object::toString).containsExactly("2","0","0","0");
         assertThat(datos.get(1).valores()).extracting(Object::toString).containsExactly("100.00","0","0","0");
         List<?> horas=datos.get(2).valores();assertThat(new java.math.BigDecimal(horas.get(3).toString())).isEqualByComparingTo("1");
-        assertThat(datos.get(3).valores()).extracting(Object::toString).containsExactly("1");
-        assertThat(datos.get(4).valores()).extracting(Object::toString).containsExactly("1");
-        assertThat(metricas.graficos(LocalDate.of(2030,3,1),fecha,2L).get(3).valores()).isEmpty();
+        assertThat(datos.get(3).valores()).extracting(Object::toString).containsExactly("50.00","0","0","0");
+        assertThat(datos.get(4).valores()).extracting(Object::toString).containsExactly("1","0","0","0");
+        assertThat(metricas.graficos(LocalDate.of(2030,3,1),fecha,2L).get(0).valores()).extracting(Object::toString).containsOnly("0");
+        List<Metrica> puntuales=metricas.estadoPuntual(null);
+        assertThat(puntuales).hasSize(5).allMatch(m->m.tipo().equals("kpi"));
+        assertThat(new java.math.BigDecimal(puntuales.get(0).valores().get(0).toString())).isEqualByComparingTo("0");
+        assertThat(new java.math.BigDecimal(puntuales.get(2).valores().get(0).toString())).isEqualByComparingTo("1");
+        assertThat(new java.math.BigDecimal(puntuales.get(3).valores().get(0).toString())).isEqualByComparingTo("100");
         assertThatThrownBy(()->metricas.graficos(fecha,fecha.minusDays(1),null)).isInstanceOf(IllegalArgumentException.class);
     }
     @Test void pagosSeFiltranYConservanLaDevolucion(){
@@ -104,9 +103,9 @@ class SistemaCompletoIntegrationTest {
         }
         mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/usuario/login")
                 .param("correo","admin@canchas.pe").param("contrasena","admin123")).andExpect(status().isForbidden());
-        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/disponibilidad/bloquear")
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/admin/disponibilidad/programar")
                 .session(sesion(1L))).andExpect(status().isForbidden());
-        mvc.perform(post("/admin/disponibilidad/bloquear").session(sesion(1L)).param("canchaId","1").param("fecha","2030-03-04")
+        mvc.perform(post("/admin/disponibilidad/programar").session(sesion(1L)).param("canchaId","1").param("fecha","2030-03-04")
                 .param("inicio","12:15").param("fin","12:45").param("motivo","Mantenimiento"))
                 .andExpect(redirectedUrl("/admin/disponibilidad"));
         assertThat(operaciones.bloqueos(1L, fecha)).hasSize(1);
@@ -127,7 +126,7 @@ class SistemaCompletoIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM pago p JOIN reserva r ON r.id_reserva=p.id_reserva WHERE r.fecha=?",Integer.class,fecha)).isEqualTo(1);
     }
     @Test void mantenimientoYReservaSimultaneosNoSeSuperponen() throws Exception{
-        List<Boolean> resultados=paralelo(()->{crear(12);return true;},()->{operaciones.bloquear(1L,1L,fecha,LocalTime.NOON,LocalTime.of(13,0),"Limpieza");return true;});
+        List<Boolean> resultados=paralelo(()->{crear(12);return true;},()->{operaciones.programarMantenimiento(1L,1L,fecha,LocalTime.NOON,LocalTime.of(13,0),"Limpieza");return true;});
         assertThat(resultados).containsExactlyInAnyOrder(true,false);
     }
     @Test void dosCancelacionesSimultaneasGeneranUnaDevolucion() throws Exception{

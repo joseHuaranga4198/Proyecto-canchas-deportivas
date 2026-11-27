@@ -1,0 +1,32 @@
+@startuml
+title CanchaYa: proceso core (alquiler de canchas)
+left to right direction
+actor Visitante
+actor Cliente
+actor Administrador
+rectangle CanchaYa {
+  usecase "F11 Ver catálogo público de canchas" as F11
+  usecase "F15 Consultar disponibilidad de una cancha" as F15
+  usecase "F16 Reservar cancha con pago simulado" as F16
+  usecase "F17 Ver mis reservas" as F17
+  usecase "F18 Ver detalle de mi reserva" as F18
+  usecase "F19 Cancelar mi reserva (con devolución total)" as F19
+  usecase "F20 Buscar reservas (administración)" as F20
+  usecase "F21 Cancelar reserva por el administrador" as F21
+  usecase "Registrar devolución total simulada" as DEV
+  usecase "Iniciar sesión" as LOG
+}
+Visitante --> F11
+Visitante --> F15
+Cliente --> F11
+Cliente --> F15
+Cliente --> F16
+Cliente --> F17
+Cliente --> F18
+Cliente --> F19
+F20 <-- Administrador
+F21 <-- Administrador
+F16 ..> LOG : <<include>>
+F19 ..> DEV : <<include>>
+F21 ..> DEV : <<include>>
+@enduml

@@ -5,5 +5,8 @@ import java.util.List;
 
 public interface MetricasService {
     void validarRango(LocalDate desde, LocalDate hasta);
+
     List<Metrica> graficos(LocalDate desde, LocalDate hasta, Long cancha);
+
+    List<Metrica> estadoPuntual(Long cancha);
 }

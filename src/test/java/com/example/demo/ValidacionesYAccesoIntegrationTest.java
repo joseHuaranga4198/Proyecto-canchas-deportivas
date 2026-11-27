@@ -67,8 +67,8 @@ class ValidacionesYAccesoIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/admin/categorias/guardar", "/admin/categorias/eliminar/1",
-            "/canchas/admin/guardar", "/canchas/admin/estado/1", "/usuario/admin/bloquear/3",
+    @ValueSource(strings = {"/admin/categorias/guardar", "/admin/categorias/estado/1",
+            "/canchas/admin/guardar", "/canchas/admin/estado/1", "/usuario/admin/suspender/3",
             "/reservas/admin/1/cancelar"})
     void escriturasAdminSeProtegenAntesDeProcesarParametros(String ruta) throws Exception {
         mvc.perform(post(ruta)).andExpect(status().is3xxRedirection());
@@ -86,7 +86,7 @@ class ValidacionesYAccesoIntegrationTest {
     @Test
     void bloqueoDuranteSesionInvalidaAcceso() throws Exception {
         MockHttpSession sesion = sesion(2L);
-        jdbc.update("UPDATE usuario SET estado='BLOQUEADO' WHERE id_usuario=2");
+        jdbc.update("UPDATE usuario SET estado='SUSPENDIDO' WHERE id_usuario=2");
         mvc.perform(get("/reservas/mis-reservas").session(sesion)).andExpect(redirectedUrl("/usuario/login"));
         assertThat(sesion.isInvalid()).isTrue();
         assertThat(usuarios.autenticar("carlos@gmail.com", "123456")).isNull();
@@ -177,7 +177,7 @@ class ValidacionesYAccesoIntegrationTest {
         jdbc.update("UPDATE categoria SET estado='INACTIVA' WHERE id_categoria=1");
         assertThatThrownBy(() -> solicitud()).isInstanceOf(IllegalStateException.class);
         jdbc.update("UPDATE categoria SET estado='ACTIVA' WHERE id_categoria=1");
-        jdbc.update("UPDATE usuario SET estado='BLOQUEADO' WHERE id_usuario=2");
+        jdbc.update("UPDATE usuario SET estado='SUSPENDIDO' WHERE id_usuario=2");
         assertThatThrownBy(() -> solicitud()).isInstanceOf(IllegalStateException.class);
     }
 
@@ -199,8 +199,11 @@ class ValidacionesYAccesoIntegrationTest {
     void categoriasValidanNombreDuplicadosYReferencias() {
         assertThatThrownBy(() -> categorias.guardar(new Categoria(null, " ", "", "ACTIVA"))).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> categorias.guardar(new Categoria(null, "fútbol 5", "", "ACTIVA"))).isInstanceOf(IllegalArgumentException.class);
-        assertThat(categorias.eliminar(1L)).isFalse();
-        assertThatThrownBy(() -> usuarios.alternarBloqueo(1L)).isInstanceOf(IllegalArgumentException.class);
+        categorias.cambiarEstado(1L, "INACTIVA");
+        assertThat(categorias.obtenerPorId(1L).getEstado()).isEqualTo("INACTIVA");
+        assertThat(canchas.listarDisponibles()).noneMatch(c -> c.getCategoria().getIdCategoria().equals(1L));
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM cancha WHERE id_categoria=1", Integer.class)).isPositive();
+        assertThatThrownBy(() -> usuarios.alternarSuspension(1L)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

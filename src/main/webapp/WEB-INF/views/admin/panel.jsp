@@ -83,7 +83,6 @@
                             <td>
                                 <c:choose>
                                     <c:when test="${r.estado eq 'CONFIRMADA'}"><span class="badge badge-confirmada">CONFIRMADA</span></c:when>
-                                    <c:when test="${r.estado eq 'PENDIENTE'}"><span class="badge badge-pendiente">PENDIENTE</span></c:when>
                                     <c:otherwise><span class="badge badge-cancelada">${r.estado}</span></c:otherwise>
                                 </c:choose>
                             </td>

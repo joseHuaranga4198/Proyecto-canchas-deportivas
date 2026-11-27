@@ -34,7 +34,7 @@ public class OperacionServiceImpl implements OperacionService {
 
     @Override
     @Transactional
-    public void bloquear(Long admin, Long cancha, LocalDate fecha, LocalTime inicio, LocalTime fin, String motivo) {
+    public void programarMantenimiento(Long admin, Long cancha, LocalDate fecha, LocalTime inicio, LocalTime fin, String motivo) {
         validarAdmin(admin);
         Validaciones.id(cancha, "La cancha");
         reservaService.validarIntervaloFuturo(fecha, inicio, fin);
@@ -50,26 +50,26 @@ public class OperacionServiceImpl implements OperacionService {
         }
         if (!reservas.buscarSuperpuestas(cancha, fecha, inicio, fin).isEmpty()) {
             throw new IllegalStateException(
-                    "Hay reservas en ese horario. Cancélalas y devuelve el pago antes de bloquear.");
+                    "Hay reservas en ese horario. Cancélalas y devuelve el pago antes de programar el mantenimiento.");
         }
         if (operaciones.bloqueada(cancha, fecha, inicio, fin)) {
-            throw new IllegalStateException("Ya existe un bloqueo en ese horario.");
+            throw new IllegalStateException("Ya existe un mantenimiento en ese horario.");
         }
         operaciones.guardarBloqueo(cancha, fecha, inicio, fin, motivo, admin);
     }
 
     @Override
     @Transactional
-    public void anular(Long admin, Long id) {
+    public void anularMantenimiento(Long admin, Long id) {
         validarAdmin(admin);
         Validaciones.id(id, "El bloqueo");
         Long cancha = operaciones.canchaBloqueo(id);
         if (cancha == null) {
-            throw new IllegalArgumentException("No se encontró el bloqueo.");
+            throw new IllegalArgumentException("No se encontró el mantenimiento.");
         }
         reservas.bloquearCancha(cancha);
         if (operaciones.anularBloqueo(id) != 1) {
-            throw new IllegalStateException("El bloqueo ya fue anulado.");
+            throw new IllegalStateException("El mantenimiento ya fue anulado.");
         }
     }
 
@@ -82,27 +82,6 @@ public class OperacionServiceImpl implements OperacionService {
     @Override
     public Map<String, Object> devolucion(Long reserva) {
         return operaciones.devolucion(Validaciones.id(reserva, "La reserva"));
-    }
-
-    @Override
-    @Transactional
-    public void regularizarDevolucion(Long admin, Long idReserva) {
-        validarAdmin(admin);
-        Validaciones.id(idReserva, "La reserva");
-        Reserva reserva = reservas.obtenerPorId(idReserva);
-        if (reserva == null) {
-            throw new IllegalArgumentException("No se encontró la reserva.");
-        }
-        reservas.bloquearCancha(reserva.getCancha().getIdCancha());
-        reserva = reservas.obtenerPorId(idReserva);
-        if (!"CANCELADA".equals(reserva.getEstado()) || reserva.getPago() == null
-                || !"REGISTRADO".equals(reserva.getPago().getEstado())) {
-            throw new IllegalStateException("Solo se devuelve un pago registrado de una reserva cancelada.");
-        }
-        if (operaciones.devolucion(idReserva) != null) {
-            throw new IllegalStateException("La devolución ya está registrada.");
-        }
-        operaciones.devolver(idReserva, admin, "Regularización de cancelación histórica (simulada)");
     }
 
     @Override

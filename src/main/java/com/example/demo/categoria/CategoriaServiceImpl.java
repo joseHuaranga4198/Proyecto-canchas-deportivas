@@ -3,7 +3,6 @@ package com.example.demo.categoria;
 import java.util.List;
 import com.example.demo.validacion.Validaciones;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -50,14 +49,10 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     @Override
-    public boolean eliminar(Long idCategoria) {
+    public void cambiarEstado(Long idCategoria, String estado) {
         if (obtenerPorId(idCategoria) == null) throw new IllegalArgumentException("No se encontró la categoría.");
-        // Regla: No eliminar si tiene canchas vinculadas
-        if (categoriaDAO.contarCanchasAsociadas(idCategoria) > 0) {
-            return false;
-        }
-        try { return categoriaDAO.eliminar(idCategoria) > 0; }
-        catch (DataIntegrityViolationException ex) { return false; }
+        estado = Validaciones.estado(estado, null, "ACTIVA", "INACTIVA");
+        categoriaDAO.cambiarEstado(idCategoria, estado);
     }
 
     private void validar(Categoria categoria) {

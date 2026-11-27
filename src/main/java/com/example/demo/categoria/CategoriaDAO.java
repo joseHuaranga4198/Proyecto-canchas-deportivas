@@ -14,7 +14,5 @@ public interface CategoriaDAO {
 
     int actualizar(Categoria categoria);
 
-    int eliminar(Long idCategoria);
-
-    long contarCanchasAsociadas(Long idCategoria);
+    int cambiarEstado(Long idCategoria, String estado);
 }

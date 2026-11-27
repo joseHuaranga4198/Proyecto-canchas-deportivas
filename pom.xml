@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.5.0</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.example</groupId>
 	<artifactId>demo</artifactId>
@@ -45,20 +45,17 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-		<!-- Spring Boot Starter JDBC (JdbcTemplate nativo de la clase del profesor) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
     
-    	<!-- Base de datos H2 (consola y motor) -->
     	<dependency>
         	<groupId>com.h2database</groupId>
         	<artifactId>h2</artifactId>
         	<scope>runtime</scope>
     	</dependency>
     
-    	<!-- Pool de conexiones (HikariCP es el default en Spring Boot) -->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -78,14 +75,11 @@
     		<scope>provided</scope>
 		</dependency>
 
-
-<!-- JSTL API (Jakarta EE 9+) -->
         <dependency>
             <groupId>jakarta.servlet.jsp.jstl</groupId>
             <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
         </dependency>
 
-        <!-- Implementación de JSTL para Tomcat 10+ -->
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>jakarta.servlet.jsp.jstl</artifactId>

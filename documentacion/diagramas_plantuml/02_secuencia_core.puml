@@ -1,0 +1,41 @@
+@startuml
+title Proceso core: F16 Reservar cancha con pago simulado
+autonumber
+actor Cliente
+participant "generar.jsp / pago.jsp" as V
+participant ReservaController as K
+participant "ReservaService\n(ReservaServiceImpl)" as S
+participant "ReservaDAO\n(ReservaRepository)" as R
+participant "OperacionDAO\n(OperacionRepository)" as O
+database "H2" as B
+Cliente -> V : Elige fecha y horario
+V -> K : POST /reservas/guardar
+K -> S : prepararBorrador(...)
+S -> S : validarSolicitud(): cliente ACTIVO,\ncancha y categoría ACTIVA, 08-22 h
+S -> R : buscarSuperpuestas()
+R -> B : SELECT reservas no canceladas
+S -> O : bloqueada()
+O -> B : SELECT mantenimientos ACTIVO
+S --> K : Borrador
+K -> K : Guarda el borrador en la sesión
+K --> V : redirect /reservas/pago
+K -> S : prepararResumen(): importe = precio x horas
+K --> V : pago.jsp con el resumen
+Cliente -> V : Confirma el pago simulado
+V -> K : POST /reservas/pago/procesar
+K -> S : registrarReservaPagada() @Transactional
+S -> R : bloquearCancha()
+R -> B : SELECT ... FOR UPDATE
+S -> S : validarSolicitud() de nuevo
+alt el horario sigue libre
+  S -> R : guardar(reserva CONFIRMADA)
+  R -> B : INSERT INTO reserva
+  S -> R : registrarPago()
+  R -> B : INSERT INTO pago (REGISTRADO)
+  S --> K : Reserva
+  K --> V : redirect detalle de la reserva (I08)
+else otro cliente tomó el horario
+  S --> K : IllegalStateException (rollback)
+  K --> V : "El horario ya se encuentra ocupado"
+end
+@enduml
