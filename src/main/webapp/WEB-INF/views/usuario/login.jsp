@@ -34,7 +34,6 @@
         <div class="alert-success">Cuenta creada con éxito. Inicia sesión.</div>
     </c:if>
 
-    <!-- FORMULARIO CON ATRIBUTOS NAME ESTANDARIZADOS -->
     <form action="<c:url value='/usuario/login'/>" method="post">
 <input type="hidden" name="_csrf" value="${csrfToken}">
         <div class="form-group">

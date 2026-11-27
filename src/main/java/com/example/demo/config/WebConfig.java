@@ -24,8 +24,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
-        // Tomcat usa ;jsessionid para separar sesiones. Se elimina al buscar la ruta MVC,
-        // incluso en el inicio /;jsessionid=..., pero Tomcat conserva la sesión asociada.
         UrlPathHelper rutas = new UrlPathHelper();
         rutas.setRemoveSemicolonContent(true);
         configurer.setPatternParser(null);
@@ -35,14 +33,14 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public LocaleResolver localeResolver() {
         SessionLocaleResolver slr = new SessionLocaleResolver();
-        slr.setDefaultLocale(new Locale("es")); // Idioma por defecto
+        slr.setDefaultLocale(new Locale("es"));
         return slr;
     }
 
     @Bean
     public LocaleChangeInterceptor localeChangeInterceptor() {
         LocaleChangeInterceptor lci = new LocaleChangeInterceptor();
-        lci.setParamName("lang"); // parámetro en la URL
+        lci.setParamName("lang");
         return lci;
     }
 

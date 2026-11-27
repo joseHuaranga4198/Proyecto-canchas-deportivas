@@ -1,4 +1,3 @@
-/* Las consultas y los cálculos se hacen en Java/JDBC; aquí solo se dibujan los resultados. */
 (async function () {
   const series = document.getElementById('graficos');
   const indicadores = document.getElementById('indicadores');

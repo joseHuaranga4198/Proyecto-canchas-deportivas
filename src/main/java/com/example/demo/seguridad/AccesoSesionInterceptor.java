@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
 
-/** Revalida en H2 el estado y el rol; no confía en una copia antigua de la sesión. */
 public class AccesoSesionInterceptor implements HandlerInterceptor {
     private final UsuarioService usuarios;
 
@@ -31,7 +30,6 @@ public class AccesoSesionInterceptor implements HandlerInterceptor {
             if (dato != null) session.invalidate();
         }
 
-        // Usa la ruta resuelta por MVC, sin ;jsessionid ni prefijo de despliegue.
         String ruta = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
         if (ruta == null) ruta = request.getServletPath();
         boolean paginaPublica = ruta.equals("/publicidad") || ruta.equals("/contacto") || ruta.equals("/nosotros")

@@ -6,7 +6,6 @@ public interface UsuarioService {
 
     Usuario autenticar(String correo, String contrasena);
 
-    /** Indica si las credenciales son correctas pero la cuenta está SUSPENDIDA. */
     boolean estaSuspendido(String correo, String contrasena);
 
     boolean registrarCliente(Usuario usuario);

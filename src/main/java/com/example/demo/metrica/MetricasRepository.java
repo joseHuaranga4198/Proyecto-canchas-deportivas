@@ -8,10 +8,6 @@ import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-/**
- * Consultas SQL de las diez métricas. El filtro de cancha es opcional:
- * "CAST(? AS BIGINT) IS NULL OR r.id_cancha = ?" deja pasar todas las canchas cuando llega null.
- */
 @Repository
 public class MetricasRepository implements MetricasDAO {
 
@@ -22,8 +18,6 @@ public class MetricasRepository implements MetricasDAO {
     public MetricasRepository(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
-
-    // ---------------- Series de tiempo ----------------
 
     @Override
     public Map<LocalDate, BigDecimal> reservasRegistradasPorDia(LocalDate desde, LocalDate hasta, Long cancha) {
@@ -71,8 +65,6 @@ public class MetricasRepository implements MetricasDAO {
         return porDia(sql, desde.atStartOfDay(), hasta.plusDays(1).atStartOfDay(), cancha, cancha);
     }
 
-    // ---------------- Estado puntual ----------------
-
     @Override
     public BigDecimal reservasConfirmadasDelDia(LocalDate dia, Long cancha) {
         String sql = "SELECT COUNT(*) FROM reserva r "
@@ -117,8 +109,6 @@ public class MetricasRepository implements MetricasDAO {
                 + "WHERE r.estado = 'ACTIVO' AND r.fecha >= ?" + FILTRO_CANCHA;
         return valor(sql, dia, cancha, cancha);
     }
-
-    // ---------------- Apoyo ----------------
 
     private Map<LocalDate, BigDecimal> porDia(String sql, Object... parametros) {
         Map<LocalDate, BigDecimal> mapa = new HashMap<>();

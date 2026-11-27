@@ -7,7 +7,6 @@ import java.util.Map;
 
 public interface MetricasDAO {
 
-    // Métricas de serie de tiempo: un valor por día dentro del rango.
     Map<LocalDate, BigDecimal> reservasRegistradasPorDia(LocalDate desde, LocalDate hasta, Long cancha);
 
     Map<LocalDate, BigDecimal> importePagadoPorDia(LocalDate desde, LocalDate hasta, Long cancha);
@@ -18,7 +17,6 @@ public interface MetricasDAO {
 
     Map<LocalDate, BigDecimal> clientesConReservaPorDia(LocalDate desde, LocalDate hasta, Long cancha);
 
-    // Métricas de estado puntual: un único valor en el momento de la consulta.
     BigDecimal reservasConfirmadasDelDia(LocalDate dia, Long cancha);
 
     BigDecimal horasConfirmadasDelDia(LocalDate dia, Long cancha);

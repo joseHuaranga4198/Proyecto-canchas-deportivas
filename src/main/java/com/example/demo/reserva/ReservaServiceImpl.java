@@ -161,7 +161,6 @@ public class ReservaServiceImpl implements ReservaService {
         Validaciones.id(idCancha, "La cancha");
         validarHorarioFuturo(fecha, inicio, fin);
 
-        // Bloquea la cancha hasta terminar la transacción para serializar reservas simultáneas.
         reservas.bloquearCancha(idCancha);
         validarSolicitud(idUsuario, idCancha, fecha, inicio, fin);
         Usuario usuario = validarCliente(idUsuario);
@@ -222,7 +221,6 @@ public class ReservaServiceImpl implements ReservaService {
         operaciones.devolver(idReserva,idAdmin,"Cancelación administrativa (simulada)");
     }
 
-    /** Valida el borrador sin persistir; se repite dentro de la transacción de pago. */
     @Override
     public void validarSolicitud(Long idUsuario, Long idCancha, LocalDate fecha, LocalTime inicio, LocalTime fin) {
         validarCliente(idUsuario);
@@ -279,7 +277,6 @@ public class ReservaServiceImpl implements ReservaService {
         return precioHora.multiply(BigDecimal.valueOf(minutos))
                 .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
     }
-
 
     @Override
     public List<Map<String, Object>> turnos(Long idCancha, LocalDate fecha) {

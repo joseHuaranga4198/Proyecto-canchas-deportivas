@@ -7,9 +7,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-/**
- * Cuenta fija de la demostración académica. No reemplaza administradores existentes.
- */
 @Component
 public class ConfiguracionAdministrador implements ApplicationRunner {
     private static final Logger logger = LoggerFactory.getLogger(ConfiguracionAdministrador.class);
@@ -60,9 +57,3 @@ public class ConfiguracionAdministrador implements ApplicationRunner {
     }
 
 }
-
-
-
-
-
-

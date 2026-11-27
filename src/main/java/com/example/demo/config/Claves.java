@@ -2,7 +2,6 @@ package com.example.demo.config;
 
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
-/** Contraseñas nuevas y heredadas migran a PBKDF2 con sal sin cambiar la clave de acceso. */
 public final class Claves {
     private static final Pbkdf2PasswordEncoder ENCODER = Pbkdf2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     private Claves() { }

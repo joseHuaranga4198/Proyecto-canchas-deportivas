@@ -49,7 +49,6 @@ public class MetricasController {
         }
     }
 
-    /** Devuelve en JSON las cinco series de tiempo y los cinco indicadores de estado puntual. */
     @GetMapping("/datos")
     @ResponseBody
     public List<Metrica> datos(@RequestParam LocalDate desde, @RequestParam LocalDate hasta,

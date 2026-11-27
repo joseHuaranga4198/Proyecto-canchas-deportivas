@@ -51,7 +51,6 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     public void cambiarEstado(Long idCategoria, String estado) {
         if (obtenerPorId(idCategoria) == null) throw new IllegalArgumentException("No se encontró la categoría.");
-        // Regla RN04: las categorías no se eliminan físicamente, solo se desactivan.
         estado = Validaciones.estado(estado, null, "ACTIVA", "INACTIVA");
         categoriaDAO.cambiarEstado(idCategoria, estado);
     }

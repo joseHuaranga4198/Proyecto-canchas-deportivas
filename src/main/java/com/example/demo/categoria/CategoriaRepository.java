@@ -54,7 +54,6 @@ public class CategoriaRepository implements CategoriaDAO {
 
     @Override
     public int cambiarEstado(Long idCategoria, String estado) {
-        // Las categorías no se eliminan: solo cambian de estado y conservan sus canchas y reservas.
         String sql = "UPDATE categoria SET estado = ? WHERE id_categoria = ?";
         return jdbcTemplate.update(sql, estado, idCategoria);
     }

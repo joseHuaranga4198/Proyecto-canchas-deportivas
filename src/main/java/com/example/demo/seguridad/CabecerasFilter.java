@@ -13,7 +13,6 @@ public class CabecerasFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain chain) throws ServletException, IOException {
-        // Las URLs de sesión no deben enviarse como referencia a sitios externos.
         response.setHeader("Referrer-Policy", "no-referrer");
         response.setHeader("Cache-Control", "no-store");
         response.setHeader("X-Content-Type-Options", "nosniff");

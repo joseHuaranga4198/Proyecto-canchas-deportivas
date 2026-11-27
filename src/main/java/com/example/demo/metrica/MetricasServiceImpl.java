@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class MetricasServiceImpl implements MetricasService {
 
-    /** Horas de atención por día y por cancha: de 08:00 a 22:00. */
     private static final BigDecimal HORAS_ATENCION = BigDecimal.valueOf(14);
 
     private final MetricasDAO repository;
@@ -90,7 +89,6 @@ public class MetricasServiceImpl implements MetricasService {
             LocalDate desde, LocalDate hasta) {
         List<String> etiquetas = new ArrayList<>();
         List<BigDecimal> valores = new ArrayList<>();
-        // Los días sin movimientos se muestran con valor cero.
         for (LocalDate dia = desde; !dia.isAfter(hasta); dia = dia.plusDays(1)) {
             etiquetas.add(dia.toString());
             valores.add(datos.getOrDefault(dia, BigDecimal.ZERO));
