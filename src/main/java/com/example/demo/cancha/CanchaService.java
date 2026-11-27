@@ -10,6 +10,8 @@ public interface CanchaService {
 
     Cancha obtenerPorId(Long idCancha);
 
+    Cancha obtenerActiva(Long idCancha);
+
     void guardar(Cancha cancha);
 
     void actualizar(Cancha cancha);

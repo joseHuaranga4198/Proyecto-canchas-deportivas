@@ -28,22 +28,43 @@ public class CanchaController {
     }
 
     @GetMapping("/catalogo")
-    public String catalogo(Model model) {
-        model.addAttribute("canchas", canchaService.listarDisponibles());
-        return "cancha/catalogo";
+    public String catalogo(Model model, jakarta.servlet.http.HttpServletResponse response) {
+        try {
+            model.addAttribute("canchas", canchaService.listarDisponibles());
+            return "cancha/catalogo";
+
+        } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return "error/general";
+        }
     }
 
     @GetMapping("/admin")
-    public String listarAdmin(Model model) {
-        model.addAttribute("canchas", canchaService.listarTodas());
-        return "cancha/gestion";
+    public String listarAdmin(Model model, jakarta.servlet.http.HttpServletResponse response) {
+        try {
+            model.addAttribute("canchas", canchaService.listarTodas());
+            return "cancha/gestion";
+
+        } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return "error/general";
+        }
     }
 
     @GetMapping("/admin/nueva")
-    public String nuevaCancha(Model model) {
-        model.addAttribute("cancha", new Cancha());
-        model.addAttribute("categorias", categoriaService.listarActivas());
-        return "cancha/formulario";
+    public String nuevaCancha(Model model, jakarta.servlet.http.HttpServletResponse response) {
+        try {
+            model.addAttribute("cancha", new Cancha());
+            model.addAttribute("categorias", categoriaService.listarActivas());
+            return "cancha/formulario";
+
+        } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return "error/general";
+        }
     }
 
     @PostMapping("/admin/guardar")
@@ -52,45 +73,64 @@ public class CanchaController {
                                 @RequestParam("idCategoria") Long idCategoria,
                                 @RequestParam("precioHora") BigDecimal precioHora,
                                 @RequestParam("caracteristicas") String caracteristicas,
-                                @RequestParam("estado") String estado, Model model) {
-
-        Categoria cat = categoriaService.obtenerPorId(idCategoria);
-        Cancha cancha = (idCancha != null) ? canchaService.obtenerPorId(idCancha) : new Cancha();
-        if (cancha == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la cancha.");
-        cancha.setNombre(nombre);
-        cancha.setCategoria(cat);
-        cancha.setPrecioHora(precioHora);
-        cancha.setCaracteristicas(caracteristicas);
-        cancha.setEstado(estado);
-
+                                @RequestParam("estado") String estado, Model model, jakarta.servlet.http.HttpServletResponse response) {
         try {
-            if (idCancha == null) canchaService.guardar(cancha);
-            else canchaService.actualizar(cancha);
+            Categoria cat = categoriaService.obtenerPorId(idCategoria);
+            Cancha cancha = (idCancha != null) ? canchaService.obtenerPorId(idCancha) : new Cancha();
+            if (cancha == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la cancha.");
+            cancha.setNombre(nombre);
+            cancha.setCategoria(cat);
+            cancha.setPrecioHora(precioHora);
+            cancha.setCaracteristicas(caracteristicas);
+            cancha.setEstado(estado);
+
+            try {
+                if (idCancha == null) canchaService.guardar(cancha);
+                else canchaService.actualizar(cancha);
+            } catch (IllegalArgumentException ex) {
+                model.addAttribute("error", ex.getMessage());
+                model.addAttribute("cancha", cancha);
+                model.addAttribute("categorias", categoriaService.listarActivas());
+                return "cancha/formulario";
+            }
+            return "redirect:/canchas/admin";
+
         } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
             model.addAttribute("error", ex.getMessage());
-            model.addAttribute("cancha", cancha);
-            model.addAttribute("categorias", categoriaService.listarActivas());
-            return "cancha/formulario";
+            return "error/general";
         }
-        return "redirect:/canchas/admin";
     }
 
     @GetMapping("/admin/editar/{id}")
-    public String editarCancha(@PathVariable("id") Long id, Model model) {
-        Cancha cancha = canchaService.obtenerPorId(id);
-        if (cancha == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la cancha.");
-        model.addAttribute("cancha", cancha);
-        model.addAttribute("categorias", categoriaService.listarActivas());
-        return "cancha/formulario";
+    public String editarCancha(@PathVariable("id") Long id, Model model, jakarta.servlet.http.HttpServletResponse response) {
+        try {
+            Cancha cancha = canchaService.obtenerPorId(id);
+            if (cancha == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la cancha.");
+            model.addAttribute("cancha", cancha);
+            model.addAttribute("categorias", categoriaService.listarActivas());
+            return "cancha/formulario";
+
+        } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return "error/general";
+        }
     }
 
     @PostMapping("/admin/estado/{id}")
     public String cambiarEstado(@PathVariable("id") Long id, @RequestParam("estado") String estado, RedirectAttributes redirect) {
         try {
-            canchaService.cambiarEstado(id, estado);
+            try {
+                canchaService.cambiarEstado(id, estado);
+            } catch (IllegalArgumentException ex) {
+                redirect.addFlashAttribute("error", ex.getMessage());
+            }
+            return "redirect:/canchas/admin";
+
         } catch (IllegalArgumentException ex) {
-            redirect.addFlashAttribute("error", ex.getMessage());
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, ex.getMessage());
         }
-        return "redirect:/canchas/admin";
     }
 }

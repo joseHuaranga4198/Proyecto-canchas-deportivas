@@ -42,6 +42,50 @@ public class ReservaServiceImpl implements ReservaService {
     }
 
     @Override
+    public Reserva prepararResumen(Long idUsuario, Reserva.Borrador borrador) {
+        Validaciones.id(idUsuario, "El usuario");
+        if (borrador == null || !idUsuario.equals(borrador.getIdUsuario())) {
+            throw new IllegalArgumentException("No se encontró un borrador propio.");
+        }
+        validarSolicitud(idUsuario, borrador.getIdCancha(), borrador.getFecha(),
+                borrador.getHoraInicio(), borrador.getHoraFin());
+
+        Cancha cancha = canchas.obtenerPorId(borrador.getIdCancha());
+        Reserva resumen = new Reserva();
+        resumen.setCancha(cancha);
+        resumen.setFecha(borrador.getFecha());
+        resumen.setHoraInicio(borrador.getHoraInicio());
+        resumen.setHoraFin(borrador.getHoraFin());
+        resumen.setImporte(calcularImporte(cancha, borrador.getHoraInicio(), borrador.getHoraFin()));
+        return resumen;
+    }
+
+    @Override
+    public Reserva.Borrador prepararBorrador(Long idUsuario, Long idCancha, LocalDate fecha,
+            LocalTime inicio, LocalTime fin) {
+        validarSolicitud(idUsuario, idCancha, fecha, inicio, fin);
+        return new Reserva.Borrador(idUsuario, idCancha, fecha, inicio, fin);
+    }
+
+    @Override
+    public java.util.Set<Long> identificarCancelables(List<Reserva> reservas) {
+        java.util.Set<Long> cancelables = new java.util.HashSet<>();
+        for (Reserva reserva : reservas) {
+            if (puedeCancelar(reserva)) {
+                cancelables.add(reserva.getIdReserva());
+            }
+        }
+        return cancelables;
+    }
+
+    @Override
+    public void validarFechaConsulta(LocalDate fecha) {
+        if (fecha == null || fecha.isBefore(LocalDate.now(clock))) {
+            throw new IllegalArgumentException("Selecciona una fecha desde hoy.");
+        }
+    }
+
+    @Override
     public List<Reserva> listarCliente(Long idUsuario, String estado) {
         validarCliente(idUsuario);
         if (estado == null || estado.isBlank()) return reservas.listarPorUsuario(idUsuario);

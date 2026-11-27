@@ -8,6 +8,15 @@ import java.util.Map;
 
 public interface ReservaService {
 
+    Reserva prepararResumen(Long idUsuario, Reserva.Borrador borrador);
+
+    Reserva.Borrador prepararBorrador(Long idUsuario, Long idCancha, LocalDate fecha,
+            LocalTime inicio, LocalTime fin);
+
+    java.util.Set<Long> identificarCancelables(List<Reserva> reservas);
+
+    void validarFechaConsulta(LocalDate fecha);
+
     List<Reserva> listarTodas();
 
     List<Reserva> listarPorUsuario(Long idUsuario);

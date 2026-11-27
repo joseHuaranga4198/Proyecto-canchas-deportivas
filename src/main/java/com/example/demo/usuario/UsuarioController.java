@@ -5,9 +5,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,11 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 @Controller
 @RequestMapping("/usuario")
 public class UsuarioController {
-
-    @InitBinder("usuario")
-    public void camposRegistro(WebDataBinder binder) {
-        binder.setAllowedFields("nombres", "apellidos", "documento", "telefono", "correo", "contrasena");
-    }
 
     private final UsuarioService usuarioService;
 
@@ -42,37 +34,43 @@ public class UsuarioController {
                                 @RequestParam(name = "contrasena", required = false) String contrasena,
                                 @RequestParam(name = "password", required = false) String password,
                                 HttpSession session, HttpServletRequest request,
-                                Model model) {
+                                Model model, jakarta.servlet.http.HttpServletResponse response) {
+        try {
+            String passFinal = (contrasena != null && !contrasena.isBlank()) ? contrasena : password;
 
-        String passFinal = (contrasena != null && !contrasena.isBlank()) ? contrasena : password;
+            if (correo == null || passFinal == null || correo.isBlank() || passFinal.isBlank()) {
+                model.addAttribute("error", "Por favor ingrese su correo y contraseña.");
+                return "usuario/login";
+            }
 
-        if (correo == null || passFinal == null || correo.isBlank() || passFinal.isBlank()) {
-            model.addAttribute("error", "Por favor ingrese su correo y contraseña.");
-            return "usuario/login";
-        }
+            Usuario user = usuarioService.autenticar(correo, passFinal);
 
-        Usuario user = usuarioService.autenticar(correo, passFinal);
+            if (user == null) {
+                model.addAttribute("error", "Credenciales incorrectas.");
+                return "usuario/login";
+            }
 
-        if (user == null) {
-            model.addAttribute("error", "Credenciales incorrectas.");
-            return "usuario/login";
-        }
+            if ("BLOQUEADO".equalsIgnoreCase(user.getEstado())) {
+                model.addAttribute("error", "Su cuenta se encuentra bloqueada por administración.");
+                return "usuario/login";
+            }
 
-        if ("BLOQUEADO".equalsIgnoreCase(user.getEstado())) {
-            model.addAttribute("error", "Su cuenta se encuentra bloqueada por administración.");
-            return "usuario/login";
-        }
+            request.changeSessionId();
+            session.removeAttribute(com.example.demo.seguridad.ProteccionCsrf.ATRIBUTO);
+            user.setContrasena(null);
+            session.removeAttribute("reservaBorrador");
+            session.setAttribute("usuarioLogueado", user);
 
-        request.changeSessionId();
-        session.removeAttribute(com.example.demo.seguridad.ProteccionCsrf.ATRIBUTO);
-        user.setContrasena(null);
-        session.removeAttribute("reservaBorrador");
-        session.setAttribute("usuarioLogueado", user);
+            if ("ADMINISTRADOR".equalsIgnoreCase(user.getRol())) {
+                return "redirect:/admin/panel";
+            } else {
+                return "redirect:/canchas/catalogo";
+            }
 
-        if ("ADMINISTRADOR".equalsIgnoreCase(user.getRol())) {
-            return "redirect:/admin/panel";
-        } else {
-            return "redirect:/canchas/catalogo";
+        } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return "error/general";
         }
     }
 
@@ -89,7 +87,20 @@ public class UsuarioController {
     }
 
     @PostMapping("/registro")
-    public String procesarRegistro(@ModelAttribute("usuario") Usuario usuario, Model model) {
+    public String procesarRegistro(@RequestParam(name = "nombres", required = false) String nombres,
+            @RequestParam(name = "apellidos", required = false) String apellidos,
+            @RequestParam(name = "documento", required = false) String documento,
+            @RequestParam(name = "telefono", required = false) String telefono,
+            @RequestParam(name = "correo", required = false) String correo,
+            @RequestParam(name = "contrasena", required = false) String contrasena, Model model) {
+        Usuario usuario = new Usuario();
+        usuario.setNombres(nombres);
+        usuario.setApellidos(apellidos);
+        usuario.setDocumento(documento);
+        usuario.setTelefono(telefono);
+        usuario.setCorreo(correo);
+        usuario.setContrasena(contrasena);
+        model.addAttribute("usuario", usuario);
         boolean registrado;
         try {
             registrado = usuarioService.registrarCliente(usuario);
@@ -106,13 +117,20 @@ public class UsuarioController {
     }
 
     @GetMapping("/admin/lista")
-    public String listarClientes(HttpSession session, Model model) {
-        Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
-        if (user == null || !"ADMINISTRADOR".equalsIgnoreCase(user.getRol())) {
-            return "redirect:/usuario/login";
+    public String listarClientes(HttpSession session, Model model, jakarta.servlet.http.HttpServletResponse response) {
+        try {
+            Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
+            if (user == null || !"ADMINISTRADOR".equalsIgnoreCase(user.getRol())) {
+                return "redirect:/usuario/login";
+            }
+            model.addAttribute("clientes", usuarioService.listarClientes());
+            return "usuario/gestion-clientes";
+
+        } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return "error/general";
         }
-        model.addAttribute("clientes", usuarioService.listarClientes());
-        return "usuario/gestion-clientes";
     }
 
     @PostMapping("/admin/bloquear/{id}")
@@ -151,15 +169,37 @@ public class UsuarioController {
     }
 
     @PostMapping("/perfil")
-    public String actualizarPerfil(@ModelAttribute("usuario") Usuario datos, HttpSession session,
+    public String actualizarPerfil(@RequestParam(name = "nombres", required = false) String nombres,
+            @RequestParam(name = "apellidos", required = false) String apellidos,
+            @RequestParam(name = "documento", required = false) String documento,
+            @RequestParam(name = "telefono", required = false) String telefono,
+            @RequestParam(name = "correo", required = false) String correo, HttpSession session,
             Model model, RedirectAttributes redirect) {
+        Usuario datos = new Usuario();
+        datos.setNombres(nombres);
+        datos.setApellidos(apellidos);
+        datos.setDocumento(documento);
+        datos.setTelefono(telefono);
+        datos.setCorreo(correo);
+        model.addAttribute("usuario", datos);
         Usuario sesion = (Usuario) session.getAttribute("usuarioLogueado");
         return actualizar(sesion.getIdUsuario(), datos, true, model, redirect);
     }
 
     @PostMapping("/admin/editar/{id}")
-    public String actualizarAdmin(@PathVariable Long id, @ModelAttribute("usuario") Usuario datos,
+    public String actualizarAdmin(@PathVariable Long id, @RequestParam(name = "nombres", required = false) String nombres,
+            @RequestParam(name = "apellidos", required = false) String apellidos,
+            @RequestParam(name = "documento", required = false) String documento,
+            @RequestParam(name = "telefono", required = false) String telefono,
+            @RequestParam(name = "correo", required = false) String correo,
             Model model, RedirectAttributes redirect) {
+        Usuario datos = new Usuario();
+        datos.setNombres(nombres);
+        datos.setApellidos(apellidos);
+        datos.setDocumento(documento);
+        datos.setTelefono(telefono);
+        datos.setCorreo(correo);
+        model.addAttribute("usuario", datos);
         return actualizar(id, datos, false, model, redirect);
     }
 

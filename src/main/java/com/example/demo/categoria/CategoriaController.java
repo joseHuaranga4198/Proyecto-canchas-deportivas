@@ -29,50 +29,77 @@ public class CategoriaController {
     }
 
     @GetMapping
-    public String listar(HttpSession session, Model model) {
-        if (!tienePermisoAdmin(session)) {
-            return "redirect:/usuario/login";
+    public String listar(HttpSession session, Model model, jakarta.servlet.http.HttpServletResponse response) {
+        try {
+            if (!tienePermisoAdmin(session)) {
+                return "redirect:/usuario/login";
+            }
+            model.addAttribute("categorias", categoriaService.listarTodas());
+            model.addAttribute("nuevaCategoria", new Categoria());
+            return "categoria/categorias";
+
+        } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return "error/general";
         }
-        model.addAttribute("categorias", categoriaService.listarTodas());
-        model.addAttribute("nuevaCategoria", new Categoria());
-        return "categoria/categorias";
     }
 
     @PostMapping("/guardar")
-    public String guardar(@ModelAttribute("nuevaCategoria") Categoria categoria, HttpSession session, Model model) {
-        if (!tienePermisoAdmin(session)) {
-            return "redirect:/usuario/login";
-        }
+    public String guardar(@ModelAttribute("nuevaCategoria") Categoria categoria, HttpSession session, Model model, jakarta.servlet.http.HttpServletResponse response) {
         try {
-            if (categoria.getIdCategoria() == null) categoriaService.guardar(categoria);
-            else categoriaService.actualizar(categoria);
+            if (!tienePermisoAdmin(session)) {
+                return "redirect:/usuario/login";
+            }
+            try {
+                if (categoria.getIdCategoria() == null) categoriaService.guardar(categoria);
+                else categoriaService.actualizar(categoria);
+            } catch (IllegalArgumentException ex) {
+                model.addAttribute("error", ex.getMessage());
+                model.addAttribute("categorias", categoriaService.listarTodas());
+                return "categoria/categorias";
+            }
+            return "redirect:/admin/categorias";
+
         } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
             model.addAttribute("error", ex.getMessage());
-            model.addAttribute("categorias", categoriaService.listarTodas());
-            return "categoria/categorias";
+            return "error/general";
         }
-        return "redirect:/admin/categorias";
     }
 
     @GetMapping("/editar/{id}")
-    public String editar(@PathVariable Long id, Model model) {
-        Categoria categoria = categoriaService.obtenerPorId(id);
-        if (categoria == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        model.addAttribute("nuevaCategoria", categoria);
-        model.addAttribute("categorias", categoriaService.listarTodas());
-        return "categoria/categorias";
+    public String editar(@PathVariable Long id, Model model, jakarta.servlet.http.HttpServletResponse response) {
+        try {
+            Categoria categoria = categoriaService.obtenerPorId(id);
+            if (categoria == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            model.addAttribute("nuevaCategoria", categoria);
+            model.addAttribute("categorias", categoriaService.listarTodas());
+            return "categoria/categorias";
+
+        } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return "error/general";
+        }
     }
 
     @PostMapping("/eliminar/{id}")
     public String eliminar(@PathVariable("id") Long id, HttpSession session, RedirectAttributes redirect) {
-        if (!tienePermisoAdmin(session)) {
-            return "redirect:/usuario/login";
-        }
         try {
-            if (!categoriaService.eliminar(id)) redirect.addFlashAttribute("error", "No se puede eliminar una categoría con canchas asociadas.");
+            if (!tienePermisoAdmin(session)) {
+                return "redirect:/usuario/login";
+            }
+            try {
+                if (!categoriaService.eliminar(id)) redirect.addFlashAttribute("error", "No se puede eliminar una categoría con canchas asociadas.");
+            } catch (IllegalArgumentException ex) {
+                redirect.addFlashAttribute("error", ex.getMessage());
+            }
+            return "redirect:/admin/categorias";
+
         } catch (IllegalArgumentException ex) {
-            redirect.addFlashAttribute("error", ex.getMessage());
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, ex.getMessage());
         }
-        return "redirect:/admin/categorias";
     }
 }

@@ -16,9 +16,16 @@ public class OperacionController {
     private final OperacionService operaciones;private final CanchaService canchas;private final Clock clock;
     public OperacionController(OperacionService operaciones,CanchaService canchas,Clock clock){this.operaciones=operaciones;this.canchas=canchas;this.clock=clock;}
     @GetMapping("/disponibilidad")
-    public String disponibilidad(@RequestParam(required=false) Long canchaId,Model model){
-        model.addAttribute("canchas",canchas.listarTodas());model.addAttribute("bloqueos",operaciones.bloqueos(canchaId,null));
-        model.addAttribute("fechaMinima",LocalDate.now(clock));return "operacion/disponibilidad";
+    public String disponibilidad(@RequestParam(required=false) Long canchaId,Model model, jakarta.servlet.http.HttpServletResponse response){
+        try {
+            model.addAttribute("canchas",canchas.listarTodas());model.addAttribute("bloqueos",operaciones.bloqueos(canchaId,null));
+            model.addAttribute("fechaMinima",LocalDate.now(clock));return "operacion/disponibilidad";
+
+        } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return "error/general";
+        }
     }
     @PostMapping("/disponibilidad/bloquear")
     public String bloquear(@RequestParam Long canchaId,@RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate fecha,

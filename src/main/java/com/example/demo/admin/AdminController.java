@@ -31,15 +31,22 @@ public class AdminController {
     }
 
     @GetMapping("/panel")
-    public String panelPrincipal(HttpSession session, Model model) {
-        if (!tienePermisoAdmin(session)) {
-            return "redirect:/usuario/login";
-        }
+    public String panelPrincipal(HttpSession session, Model model, jakarta.servlet.http.HttpServletResponse response) {
+        try {
+            if (!tienePermisoAdmin(session)) {
+                return "redirect:/usuario/login";
+            }
 
-        model.addAttribute("totalCanchas", canchaService.listarTodas().size());
-        model.addAttribute("totalReservas", reservaService.listarTodas().size());
-        model.addAttribute("totalClientes", usuarioService.listarClientes().size());
-        model.addAttribute("reservasRecientes", reservaService.listarTodas().stream().limit(8).toList());
-        return "admin/panel";
+            model.addAttribute("totalCanchas", canchaService.listarTodas().size());
+            model.addAttribute("totalReservas", reservaService.listarTodas().size());
+            model.addAttribute("totalClientes", usuarioService.listarClientes().size());
+            model.addAttribute("reservasRecientes", reservaService.listarTodas().stream().limit(8).toList());
+            return "admin/panel";
+
+        } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
+            model.addAttribute("error", ex.getMessage());
+            return "error/general";
+        }
     }
 }

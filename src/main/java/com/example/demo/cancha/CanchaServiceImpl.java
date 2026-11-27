@@ -34,6 +34,15 @@ public class CanchaServiceImpl implements CanchaService {
     }
 
     @Override
+    public Cancha obtenerActiva(Long idCancha) {
+        Cancha cancha = obtenerPorId(idCancha);
+        if (cancha == null || !"ACTIVA".equalsIgnoreCase(cancha.getEstado())) {
+            return null;
+        }
+        return cancha;
+    }
+
+    @Override
     public void guardar(Cancha cancha) {
         validar(cancha);
         cancha.setIdCancha(null);

@@ -224,6 +224,23 @@ class ReservaIntegrationTest {
         assertThat(contar("pago")).isEqualTo(pagosAntes);
 
         MockHttpSession sesion = (MockHttpSession) borrador.getRequest().getSession(false);
+        MvcResult pago = mvc.perform(get("/reservas/pago").session(sesion))
+                .andExpect(status().isOk()).andExpect(view().name("reserva/pago")).andReturn();
+        Reserva resumen = (Reserva) pago.getModelAndView().getModel().get("reserva");
+        assertThat(resumen.getCancha().getIdCancha()).isEqualTo(1L);
+        assertThat(resumen.getFecha()).isEqualTo(LocalDate.of(2030, 3, 4));
+        assertThat(resumen.getHoraInicio()).isEqualTo(LocalTime.NOON);
+        assertThat(resumen.getHoraFin()).isEqualTo(LocalTime.of(13, 0));
+        assertThat(resumen.getImporte()).isEqualByComparingTo("50.00");
+        assertThat(contar("reserva")).isEqualTo(reservasAntes);
+        assertThat(contar("pago")).isEqualTo(pagosAntes);
+
+        Reserva.Borrador propio = (Reserva.Borrador) sesion.getAttribute("reservaBorrador");
+        assertThatThrownBy(() -> service.prepararResumen(3L, propio))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.prepararResumen(2L, null))
+                .isInstanceOf(IllegalArgumentException.class);
+
         mvc.perform(post("/reservas/pago/procesar").session(sesion))
                 .andExpect(redirectedUrlPattern("/reservas/mis-reservas/*"));
         assertThat(contar("reserva")).isEqualTo(reservasAntes + 1);
